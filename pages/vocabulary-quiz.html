@@ -153,28 +153,149 @@
 
 <script src="../js/app.js"></script>
 <script>
-const VOCAB_DATA = {
-  1:[
-    {id:"vocab_0001",word:"ability",chinese:"能力；才能",phonetic:"/əˈbɪləti/"},
-    {id:"vocab_0002",word:"accept",chinese:"接受；承認",phonetic:"/əkˈsɛpt/"},
-    {id:"vocab_0003",word:"achieve",chinese:"達成；實現",phonetic:"/əˈtʃiːv/"},
-    {id:"vocab_0004",word:"active",chinese:"積極的；活躍的",phonetic:"/ˈæktɪv/"},
-    {id:"vocab_0005",word:"activity",chinese:"活動；行動",phonetic:"/ækˈtɪvɪti/"},
-    {id:"vocab_0006",word:"add",chinese:"加；增加",phonetic:"/æd/"},
-    {id:"vocab_0007",word:"advice",chinese:"建議；忠告",phonetic:"/ədˈvaɪs/"},
-    {id:"vocab_0008",word:"affect",chinese:"影響；作用",phonetic:"/əˈfɛkt/"},
-    {id:"vocab_0009",word:"allow",chinese:"允許；讓",phonetic:"/əˈlaʊ/"},
-    {id:"vocab_0010",word:"amount",chinese:"數量；總額",phonetic:"/əˈmaʊnt/"},
-    {id:"vocab_0011",word:"answer",chinese:"答案；回答",phonetic:"/ˈænsər/"},
-    {id:"vocab_0012",word:"appear",chinese:"出現；似乎",phonetic:"/əˈpɪr/"},
-    {id:"vocab_0013",word:"area",chinese:"區域；面積",phonetic:"/ˈɛriə/"},
-    {id:"vocab_0014",word:"argue",chinese:"爭論；主張",phonetic:"/ˈɑːrɡjuː/"},
-    {id:"vocab_0015",word:"attention",chinese:"注意；關注",phonetic:"/əˈtɛnʃən/"}
-  ]
-};
+const VOCAB_DATA = {};
+
+function loadVocabData() {
+  const ALL_WORDS = [
+    {id:"vocab_0001",level:1,word:"go",chinese:"v. 去；走",phonetic:"/ɡoʊ/"},
+    {id:"vocab_0002",level:1,word:"eat",chinese:"v. 吃",phonetic:"/iːt/"},
+    {id:"vocab_0003",level:1,word:"big",chinese:"adj. 大的",phonetic:"/bɪɡ/"},
+    {id:"vocab_0004",level:1,word:"good",chinese:"adj. 好的；優秀的",phonetic:"/ɡʊd/"},
+    {id:"vocab_0005",level:1,word:"day",chinese:"n. 天；白天",phonetic:"/deɪ/"},
+    {id:"vocab_0006",level:1,word:"home",chinese:"n. 家；住所",phonetic:"/hoʊm/"},
+    {id:"vocab_0007",level:1,word:"food",chinese:"n. 食物",phonetic:"/fuːd/"},
+    {id:"vocab_0008",level:1,word:"time",chinese:"n. 時間；次數",phonetic:"/taɪm/"},
+    {id:"vocab_0009",level:1,word:"see",chinese:"v. 看見；理解",phonetic:"/siː/"},
+    {id:"vocab_0010",level:1,word:"come",chinese:"v. 來；到來",phonetic:"/kʌm/"},
+    {id:"vocab_0011",level:1,word:"get",chinese:"v. 得到；變得",phonetic:"/ɡɛt/"},
+    {id:"vocab_0012",level:1,word:"give",chinese:"v. 給予",phonetic:"/ɡɪv/"},
+    {id:"vocab_0013",level:1,word:"know",chinese:"v. 知道；認識",phonetic:"/noʊ/"},
+    {id:"vocab_0014",level:1,word:"take",chinese:"v. 拿；帶；花費",phonetic:"/teɪk/"},
+    {id:"vocab_0015",level:1,word:"work",chinese:"v./n. 工作；運作",phonetic:"/wɜːrk/"},
+    {id:"vocab_0016",level:2,word:"happy",chinese:"adj. 快樂的；高興的",phonetic:"/ˈhæpi/"},
+    {id:"vocab_0017",level:2,word:"friend",chinese:"n. 朋友",phonetic:"/frɛnd/"},
+    {id:"vocab_0018",level:2,word:"school",chinese:"n. 學校",phonetic:"/skuːl/"},
+    {id:"vocab_0019",level:2,word:"study",chinese:"v./n. 學習；研究",phonetic:"/ˈstʌdi/"},
+    {id:"vocab_0020",level:2,word:"water",chinese:"n. 水",phonetic:"/ˈwɔːtər/"},
+    {id:"vocab_0021",level:2,word:"book",chinese:"n. 書；v. 預訂",phonetic:"/bʊk/"},
+    {id:"vocab_0022",level:2,word:"family",chinese:"n. 家人；家庭",phonetic:"/ˈfæməli/"},
+    {id:"vocab_0023",level:2,word:"love",chinese:"v./n. 愛；熱愛",phonetic:"/lʌv/"},
+    {id:"vocab_0024",level:2,word:"want",chinese:"v. 想要",phonetic:"/wɒnt/"},
+    {id:"vocab_0025",level:2,word:"play",chinese:"v. 玩；演奏",phonetic:"/pleɪ/"},
+    {id:"vocab_0026",level:2,word:"make",chinese:"v. 製作；使得",phonetic:"/meɪk/"},
+    {id:"vocab_0027",level:2,word:"find",chinese:"v. 找到；發現",phonetic:"/faɪnd/"},
+    {id:"vocab_0028",level:2,word:"tell",chinese:"v. 告訴；辨別",phonetic:"/tɛl/"},
+    {id:"vocab_0029",level:2,word:"need",chinese:"v./n. 需要",phonetic:"/niːd/"},
+    {id:"vocab_0030",level:2,word:"think",chinese:"v. 認為；思考",phonetic:"/θɪŋk/"},
+    {id:"vocab_0031",level:3,word:"begin",chinese:"v. 開始",phonetic:"/bɪˈɡɪn/"},
+    {id:"vocab_0032",level:3,word:"change",chinese:"v./n. 改變；零錢",phonetic:"/tʃeɪndʒ/"},
+    {id:"vocab_0033",level:3,word:"help",chinese:"v./n. 幫助",phonetic:"/hɛlp/"},
+    {id:"vocab_0034",level:3,word:"keep",chinese:"v. 保持；繼續",phonetic:"/kiːp/"},
+    {id:"vocab_0035",level:3,word:"run",chinese:"v. 跑；經營",phonetic:"/rʌn/"},
+    {id:"vocab_0036",level:3,word:"call",chinese:"v. 打電話；稱呼",phonetic:"/kɔːl/"},
+    {id:"vocab_0037",level:3,word:"turn",chinese:"v. 轉；變成",phonetic:"/tɜːrn/"},
+    {id:"vocab_0038",level:3,word:"feel",chinese:"v. 感覺；摸",phonetic:"/fiːl/"},
+    {id:"vocab_0039",level:3,word:"try",chinese:"v. 嘗試；努力",phonetic:"/traɪ/"},
+    {id:"vocab_0040",level:3,word:"show",chinese:"v. 顯示；展示 n. 表演",phonetic:"/ʃoʊ/"},
+    {id:"vocab_0041",level:3,word:"walk",chinese:"v./n. 走路；散步",phonetic:"/wɔːk/"},
+    {id:"vocab_0042",level:3,word:"send",chinese:"v. 寄送；發送",phonetic:"/sɛnd/"},
+    {id:"vocab_0043",level:3,word:"meet",chinese:"v. 遇見；開會",phonetic:"/miːt/"},
+    {id:"vocab_0044",level:3,word:"ask",chinese:"v. 詢問；請求",phonetic:"/æsk/"},
+    {id:"vocab_0045",level:3,word:"wait",chinese:"v. 等待",phonetic:"/weɪt/"},
+    {id:"vocab_0046",level:4,word:"place",chinese:"n. 地方；v. 放置",phonetic:"/pleɪs/"},
+    {id:"vocab_0047",level:4,word:"follow",chinese:"v. 跟隨；遵循",phonetic:"/ˈfɒloʊ/"},
+    {id:"vocab_0048",level:4,word:"move",chinese:"v. 移動；搬家",phonetic:"/muːv/"},
+    {id:"vocab_0049",level:4,word:"stand",chinese:"v. 站立；忍受",phonetic:"/stænd/"},
+    {id:"vocab_0050",level:4,word:"lose",chinese:"v. 失去；輸",phonetic:"/luːz/"},
+    {id:"vocab_0051",level:4,word:"open",chinese:"v./adj. 打開；開放的",phonetic:"/ˈoʊpən/"},
+    {id:"vocab_0052",level:4,word:"close",chinese:"v./adj. 關閉；靠近的",phonetic:"/kloʊz/"},
+    {id:"vocab_0053",level:4,word:"learn",chinese:"v. 學習；得知",phonetic:"/lɜːrn/"},
+    {id:"vocab_0054",level:4,word:"live",chinese:"v. 居住；活著 adj. 現場的",phonetic:"/lɪv/"},
+    {id:"vocab_0055",level:4,word:"buy",chinese:"v. 購買",phonetic:"/baɪ/"},
+    {id:"vocab_0056",level:4,word:"start",chinese:"v./n. 開始",phonetic:"/stɑːrt/"},
+    {id:"vocab_0057",level:4,word:"leave",chinese:"v. 離開；留下",phonetic:"/liːv/"},
+    {id:"vocab_0058",level:4,word:"bring",chinese:"v. 帶來",phonetic:"/brɪŋ/"},
+    {id:"vocab_0059",level:4,word:"hear",chinese:"v. 聽見；得知",phonetic:"/hɪr/"},
+    {id:"vocab_0060",level:4,word:"hold",chinese:"v. 握住；舉行",phonetic:"/hoʊld/"},
+    {id:"vocab_0061",level:5,word:"important",chinese:"adj. 重要的",phonetic:"/ɪmˈpɔːrtənt/"},
+    {id:"vocab_0062",level:5,word:"problem",chinese:"n. 問題；難題",phonetic:"/ˈprɒbləm/"},
+    {id:"vocab_0063",level:5,word:"different",chinese:"adj. 不同的",phonetic:"/ˈdɪfrənt/"},
+    {id:"vocab_0064",level:5,word:"remember",chinese:"v. 記得；記住",phonetic:"/rɪˈmɛmbər/"},
+    {id:"vocab_0065",level:5,word:"understand",chinese:"v. 理解；明白",phonetic:"/ˌʌndərˈstænd/"},
+    {id:"vocab_0066",level:5,word:"language",chinese:"n. 語言",phonetic:"/ˈlæŋɡwɪdʒ/"},
+    {id:"vocab_0067",level:5,word:"experience",chinese:"n./v. 經驗；經歷",phonetic:"/ɪkˈspɪriəns/"},
+    {id:"vocab_0068",level:5,word:"future",chinese:"n./adj. 未來",phonetic:"/ˈfjuːtʃər/"},
+    {id:"vocab_0069",level:5,word:"practice",chinese:"v./n. 練習；實踐",phonetic:"/ˈpræktɪs/"},
+    {id:"vocab_0070",level:5,word:"prepare",chinese:"v. 準備",phonetic:"/prɪˈpɛr/"},
+    {id:"vocab_0071",level:5,word:"describe",chinese:"v. 描述；形容",phonetic:"/dɪˈskraɪb/"},
+    {id:"vocab_0072",level:5,word:"suggest",chinese:"v. 建議；暗示",phonetic:"/səˈdʒɛst/"},
+    {id:"vocab_0073",level:5,word:"decide",chinese:"v. 決定",phonetic:"/dɪˈsaɪd/"},
+    {id:"vocab_0074",level:5,word:"discuss",chinese:"v. 討論",phonetic:"/dɪˈskʌs/"},
+    {id:"vocab_0075",level:5,word:"choose",chinese:"v. 選擇",phonetic:"/tʃuːz/"},
+    {id:"vocab_0076",level:6,word:"develop",chinese:"v. 發展；開發",phonetic:"/dɪˈvɛləp/"},
+    {id:"vocab_0077",level:6,word:"increase",chinese:"v./n. 增加",phonetic:"/ɪnˈkriːs/"},
+    {id:"vocab_0078",level:6,word:"compare",chinese:"v. 比較",phonetic:"/kəmˈpɛr/"},
+    {id:"vocab_0079",level:6,word:"effect",chinese:"n. 效果；影響",phonetic:"/ɪˈfɛkt/"},
+    {id:"vocab_0080",level:6,word:"benefit",chinese:"n./v. 好處；有益於",phonetic:"/ˈbɛnɪfɪt/"},
+    {id:"vocab_0081",level:6,word:"process",chinese:"n./v. 過程；處理",phonetic:"/ˈprɒsɛs/"},
+    {id:"vocab_0082",level:6,word:"research",chinese:"n./v. 研究",phonetic:"/ˈriːsɜːrtʃ/"},
+    {id:"vocab_0083",level:6,word:"method",chinese:"n. 方法；方式",phonetic:"/ˈmɛθəd/"},
+    {id:"vocab_0084",level:6,word:"result",chinese:"n./v. 結果；導致",phonetic:"/rɪˈzʌlt/"},
+    {id:"vocab_0085",level:6,word:"system",chinese:"n. 系統；制度",phonetic:"/ˈsɪstəm/"},
+    {id:"vocab_0086",level:6,word:"society",chinese:"n. 社會",phonetic:"/səˈsaɪəti/"},
+    {id:"vocab_0087",level:6,word:"culture",chinese:"n. 文化",phonetic:"/ˈkʌltʃər/"},
+    {id:"vocab_0088",level:6,word:"create",chinese:"v. 創造；創作",phonetic:"/kriˈeɪt/"},
+    {id:"vocab_0089",level:6,word:"provide",chinese:"v. 提供",phonetic:"/prəˈvaɪd/"},
+    {id:"vocab_0090",level:6,word:"support",chinese:"v./n. 支持；支援",phonetic:"/səˈpɔːrt/"},
+    {id:"vocab_0091",level:7,word:"approach",chinese:"n./v. 方法；靠近",phonetic:"/əˈproʊtʃ/"},
+    {id:"vocab_0092",level:7,word:"attitude",chinese:"n. 態度；看法",phonetic:"/ˈætɪtjuːd/"},
+    {id:"vocab_0093",level:7,word:"maintain",chinese:"v. 維持；保養",phonetic:"/meɪnˈteɪn/"},
+    {id:"vocab_0094",level:7,word:"resource",chinese:"n. 資源",phonetic:"/ˈriːsɔːrs/"},
+    {id:"vocab_0095",level:7,word:"strategy",chinese:"n. 策略；戰略",phonetic:"/ˈstrætədʒi/"},
+    {id:"vocab_0096",level:7,word:"establish",chinese:"v. 建立；確立",phonetic:"/ɪˈstæblɪʃ/"},
+    {id:"vocab_0097",level:7,word:"participate",chinese:"v. 參與；參加",phonetic:"/pɑːrˈtɪsɪpeɪt/"},
+    {id:"vocab_0098",level:7,word:"significant",chinese:"adj. 重要的；顯著的",phonetic:"/sɪɡˈnɪfɪkənt/"},
+    {id:"vocab_0099",level:7,word:"indicate",chinese:"v. 指出；顯示",phonetic:"/ˈɪndɪkeɪt/"},
+    {id:"vocab_0100",level:7,word:"consequence",chinese:"n. 後果；結果",phonetic:"/ˈkɒnsɪkwəns/"},
+    {id:"vocab_0101",level:8,word:"psychological",chinese:"adj. 心理的",phonetic:"/ˌsaɪkəˈlɒdʒɪkəl/"},
+    {id:"vocab_0102",level:8,word:"sustainable",chinese:"adj. 永續的；可持續的",phonetic:"/səˈsteɪnəbəl/"},
+    {id:"vocab_0103",level:8,word:"phenomenon",chinese:"n. 現象",phonetic:"/fɪˈnɒmɪnən/"},
+    {id:"vocab_0104",level:8,word:"controversial",chinese:"adj. 有爭議的",phonetic:"/ˌkɒntrəˈvɜːrʃəl/"},
+    {id:"vocab_0105",level:8,word:"perspective",chinese:"n. 觀點；視角",phonetic:"/pərˈspɛktɪv/"},
+    {id:"vocab_0106",level:8,word:"interpretation",chinese:"n. 解釋；詮釋",phonetic:"/ɪnˌtɜːrprɪˈteɪʃən/"},
+    {id:"vocab_0107",level:8,word:"implication",chinese:"n. 含義；暗示",phonetic:"/ˌɪmplɪˈkeɪʃən/"},
+    {id:"vocab_0108",level:8,word:"hypothesis",chinese:"n. 假說；假設",phonetic:"/haɪˈpɒθɪsɪs/"},
+    {id:"vocab_0109",level:8,word:"evaluation",chinese:"n. 評估；評價",phonetic:"/ɪˌvæljuˈeɪʃən/"},
+    {id:"vocab_0110",level:8,word:"innovation",chinese:"n. 創新；革新",phonetic:"/ˌɪnəˈveɪʃən/"},
+    {id:"vocab_0111",level:9,word:"analyze",chinese:"v. 分析",phonetic:"/ˈænəlaɪz/"},
+    {id:"vocab_0112",level:9,word:"contribute",chinese:"v. 貢獻；促成",phonetic:"/kənˈtrɪbjuːt/"},
+    {id:"vocab_0113",level:9,word:"emphasize",chinese:"v. 強調",phonetic:"/ˈɛmfəsaɪz/"},
+    {id:"vocab_0114",level:9,word:"facilitate",chinese:"v. 促進；使容易",phonetic:"/fəˈsɪlɪteɪt/"},
+    {id:"vocab_0115",level:9,word:"integrate",chinese:"v. 整合；融入",phonetic:"/ˈɪntɪɡreɪt/"},
+    {id:"vocab_0116",level:9,word:"perceive",chinese:"v. 感知；理解",phonetic:"/pərˈsiːv/"},
+    {id:"vocab_0117",level:9,word:"demonstrate",chinese:"v. 示範；證明",phonetic:"/ˈdɛmənstreɪt/"},
+    {id:"vocab_0118",level:9,word:"acknowledge",chinese:"v. 承認；確認",phonetic:"/əkˈnɒlɪdʒ/"},
+    {id:"vocab_0119",level:9,word:"accommodate",chinese:"v. 容納；適應",phonetic:"/əˈkɒmədeɪt/"},
+    {id:"vocab_0120",level:9,word:"circumstance",chinese:"n. 情況；環境",phonetic:"/ˈsɜːrkəmstæns/"},
+    {id:"vocab_0121",level:10,word:"ambiguous",chinese:"adj. 模糊的；歧義的",phonetic:"/æmˈbɪɡjuəs/"},
+    {id:"vocab_0122",level:10,word:"inevitable",chinese:"adj. 不可避免的",phonetic:"/ɪnˈɛvɪtəbəl/"},
+    {id:"vocab_0123",level:10,word:"elaborate",chinese:"v./adj. 詳細說明；精心的",phonetic:"/ɪˈlæbərət/"},
+    {id:"vocab_0124",level:10,word:"contradict",chinese:"v. 矛盾；反駁",phonetic:"/ˌkɒntrəˈdɪkt/"},
+    {id:"vocab_0125",level:10,word:"sophisticated",chinese:"adj. 複雜的；精緻的",phonetic:"/səˈfɪstɪkeɪtɪd/"},
+    {id:"vocab_0126",level:10,word:"implement",chinese:"v. 實施；執行",phonetic:"/ˈɪmplɪmɛnt/"},
+    {id:"vocab_0127",level:10,word:"resilience",chinese:"n. 韌性；恢復力",phonetic:"/rɪˈzɪliəns/"},
+    {id:"vocab_0128",level:10,word:"coherent",chinese:"adj. 連貫的；有條理的",phonetic:"/koʊˈhɪrənt/"},
+    {id:"vocab_0129",level:10,word:"unprecedented",chinese:"adj. 前所未有的",phonetic:"/ʌnˈprɛsɪdɛntɪd/"},
+    {id:"vocab_0130",level:10,word:"pragmatic",chinese:"adj. 務實的；實用的",phonetic:"/præɡˈmætɪk/"}
+  ];
+  for(let lv=1; lv<=10; lv++){
+    VOCAB_DATA[lv] = ALL_WORDS.filter(w => w.level === lv);
+  }
+}
 
 const params = new URLSearchParams(location.search);
 const level = parseInt(params.get('level')) || 1;
+loadVocabData();
 let words = VOCAB_DATA[level] || VOCAB_DATA[1];
 let questions = [];
 let current = 0;
@@ -209,22 +330,23 @@ function renderQuestion() {
   const labels = ['A','B','C','D'];
   const grid = document.getElementById('options-grid');
   grid.innerHTML = q.options.map((opt, i) => `
-    <button class="option-btn" onclick="selectOption(this,'${opt.replace(/'/g,"\\'")}')">
+    <button class="option-btn" data-answer="${opt.replace(/"/g,'&quot;')}" onclick="selectOption(this)">
       <span class="option-label">${labels[i]}</span>${opt}
     </button>
   `).join('');
 }
 
-function selectOption(btn, selected) {
+function selectOption(btn) {
   if (answered) return;
   answered = true;
+  const selected = btn.getAttribute('data-answer');
   const q = questions[current];
   const isCorrect = selected === q.answer;
   if (isCorrect) correct++; else wrong++;
 
   document.querySelectorAll('.option-btn').forEach(b => {
-    const txt = b.textContent.slice(1);
-    if (txt === q.answer) b.classList.add('correct');
+    const ans = b.getAttribute('data-answer');
+    if (ans === q.answer) b.classList.add('correct');
     else if (b === btn && !isCorrect) b.classList.add('wrong');
     b.disabled = true;
   });
@@ -252,9 +374,15 @@ function markUncertain() {
 }
 
 function speakCurrent() {
+  const word = questions[current]?.word || '';
+  if (!word) return;
   if ('speechSynthesis' in window) {
-    const u = new SpeechSynthesisUtterance(questions[current]?.word || '');
-    u.lang = 'en-US'; u.rate = 0.9; speechSynthesis.speak(u);
+    speechSynthesis.cancel();
+    setTimeout(() => {
+      const u = new SpeechSynthesisUtterance(word);
+      u.lang = 'en-US'; u.rate = 0.9; u.volume = 1;
+      speechSynthesis.speak(u);
+    }, 100);
   }
 }
 
@@ -289,7 +417,6 @@ function showResult() {
 
   document.getElementById('result-overlay').classList.add('show');
 
-  // Save journal
   const today = new Date().toISOString().split('T')[0];
   const journal = Storage.load('ling_journal') || [];
   const todayEntry = journal.find(j => j.date === today);
@@ -309,7 +436,6 @@ function goNextLevel() {
 }
 
 document.addEventListener('DOMContentLoaded', () => {
-  App.init();
   generateQuestions();
   renderQuestion();
 });
