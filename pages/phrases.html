@@ -336,7 +336,6 @@ const PHRASES = {
     {id:"p099",phrase:"see through",chinese:"看穿；堅持完成",phonetic:"/siː θruː/",detail:"識破謊言或欺騙，或堅持把某事進行到底。",example:"She saw through his lies immediately.",exampleZh:"她立刻看穿了他的謊言。",similar:["expose","complete","detect"],mistake:{wrong:"look through（意義不同：翻閱）",correct:"see through = 看穿 / 堅持到底（正確）",note:"look through = 快速翻閱，意義不同"},correctEx:"I'll see this project through to the end.<br><span style='font-size:11px;color:var(--text-muted)'>我會堅持把這個專題做到最後。</span>"},
     {id:"p100",phrase:"live on",chinese:"靠⋯維生；延續",phonetic:"/lɪv ɒn/",detail:"靠某種食物或收入維持生活，或記憶/精神的延續。",example:"She lives on a small pension.",exampleZh:"她靠微薄的退休金生活。",similar:["survive on","exist on","continue"],mistake:{wrong:"live in（意義不同：住在）",correct:"live on + N（正確）",note:"live in = 住在某地；live on = 靠⋯維生"},correctEx:"His legacy lives on through his work.<br><span style='font-size:11px;color:var(--text-muted)'>他的遺產透過他的作品延續下去。</span>"}
   ]
-}
 };
 
 let currentLevel=1, currentIdx=0;
@@ -405,7 +404,7 @@ function renderPhrase(p){
 function jumpTo(i){currentIdx=i;renderPhrase(PHRASES[currentLevel][i]);}
 function prevPhrase(){if(currentIdx>0){currentIdx--;renderPhrase(PHRASES[currentLevel][currentIdx]);}}
 function nextPhrase(){const ps=PHRASES[currentLevel];if(ps&&currentIdx<ps.length-1){currentIdx++;renderPhrase(ps[currentIdx]);}}
-function speakPhrase(){var w=document.getElementById('p-phrase').textContent.trim();if(!w)return;var u=new SpeechSynthesisUtterance(w);u.lang='en-US';speechSynthesis.speak(u);}
+function speakPhrase(){var w=document.getElementById('p-phrase').textContent.trim();if(!w)return;try{speechSynthesis.cancel();}catch(e){}var u=new SpeechSynthesisUtterance(w);u.lang='en-US';u.rate=.9;if(speechSynthesis.getVoices().length===0){speechSynthesis.onvoiceschanged=function(){speechSynthesis.speak(u);};}else{speechSynthesis.speak(u);}}
 function toggleFav(){const ps=PHRASES[currentLevel];if(!ps)return;const p=ps[currentIdx];const idx=favorites.indexOf(p.id);if(idx===-1)favorites.push(p.id);else favorites.splice(idx,1);const fd=Storage.load('ling_favorites')||{};fd.phrases=favorites;Storage.save('ling_favorites',fd);renderPhrase(p);}
 function addToWrong(){alert('已加入錯題本！');}
 function startQuiz(){alert('片語測驗功能整合中，敬請期待！');}
