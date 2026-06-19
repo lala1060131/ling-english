@@ -340,9 +340,10 @@ const PHRASES = {
 };
 
 let currentLevel=1, currentIdx=0;
-let favorites = Storage.load('ling_favorites')?.phrases || [];
+let favorites = [];
 
 document.addEventListener('DOMContentLoaded',()=>{
+  favorites = Storage.load('ling_favorites')?.phrases || [];
   renderLevelList();
   loadLevel(1);
 });
