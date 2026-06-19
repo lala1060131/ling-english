@@ -896,11 +896,17 @@ function nextWord() {
 }
 
 function speakWord() {
-  const word = document.getElementById('word-title').textContent;
+  const word = document.getElementById('word-title').textContent.trim();
+  if (!word) return;
   if ('speechSynthesis' in window) {
-    const u = new SpeechSynthesisUtterance(word);
-    u.lang = 'en-US'; u.rate = 0.9;
-    speechSynthesis.speak(u);
+    speechSynthesis.cancel();
+    setTimeout(() => {
+      const u = new SpeechSynthesisUtterance(word);
+      u.lang = 'en-US';
+      u.rate = 0.9;
+      u.volume = 1;
+      speechSynthesis.speak(u);
+    }, 100);
   }
 }
 
