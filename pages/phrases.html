@@ -401,7 +401,7 @@ function renderPhrase(p){
 function jumpTo(i){currentIdx=i;renderPhrase(PHRASES[currentLevel][i]);}
 function prevPhrase(){if(currentIdx>0){currentIdx--;renderPhrase(PHRASES[currentLevel][currentIdx]);}}
 function nextPhrase(){const ps=PHRASES[currentLevel];if(ps&&currentIdx<ps.length-1){currentIdx++;renderPhrase(ps[currentIdx]);}}
-function speakPhrase(){if('speechSynthesis' in window){const u=new SpeechSynthesisUtterance(document.getElementById('p-phrase').textContent);u.lang='en-US';u.rate=0.9;speechSynthesis.speak(u);}}
+function speakPhrase(){var w=document.getElementById('p-phrase').textContent.trim();if(!w)return;var u=new SpeechSynthesisUtterance(w);u.lang='en-US';speechSynthesis.speak(u);}
 function toggleFav(){const ps=PHRASES[currentLevel];if(!ps)return;const p=ps[currentIdx];const idx=favorites.indexOf(p.id);if(idx===-1)favorites.push(p.id);else favorites.splice(idx,1);const fd=Storage.load('ling_favorites')||{};fd.phrases=favorites;Storage.save('ling_favorites',fd);renderPhrase(p);}
 function addToWrong(){alert('已加入錯題本！');}
 function startQuiz(){alert('片語測驗功能整合中，敬請期待！');}
