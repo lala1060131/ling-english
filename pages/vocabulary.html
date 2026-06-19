@@ -568,26 +568,7 @@
 
 <script src="../js/app.js"></script>
 <script>
-// ===== VOCABULARY DATA — loaded from JSON =====
-const VOCAB_DATA = {};
-let vocabLoaded = false;
-
-async function loadVocabData() {
-  try {
-    const res = await fetch('../data/vocabulary/level01.json');
-    const all = await res.json();
-    // group by level 1-10
-    for(let lv=1; lv<=10; lv++){
-      VOCAB_DATA[lv] = all.filter(w => w.level === lv);
-    }
-    vocabLoaded = true;
-  } catch(e) {
-    console.warn('JSON load failed, using fallback');
-    vocabLoaded = true;
-  }
-}
-
-// ===== VOCABULARY DATA — 直接內嵌，不用fetch =====
+// ===== VOCABULARY DATA — 直接內嵌 =====
 const VOCAB_DATA = {};
 
 function loadVocabData() {
