@@ -571,7 +571,7 @@
 // ===== VOCABULARY DATA — 直接內嵌 =====
 const VOCAB_DATA = {};
 
-function loadVocabData() {
+async function loadVocabData() {
   // 所有150個單字直接內嵌，避免 file:// 協議 fetch 失敗
   const ALL_WORDS = [
     {id:"vocab_0001",level:1,word:"go",chinese:"v. 去；走",phonetic:"/ɡoʊ/",example:"I go to school every day.",exampleZh:"我每天去上學。",explanation:"To move from one place to another.",synonyms:["move","travel","head"],mistake:{wrong:"I am go. (錯誤)",correct:"I go. / I am going. (正確)"}},
@@ -747,7 +747,7 @@ const LEVEL_NAMES = {
 // ===== INIT =====
 document.addEventListener('DOMContentLoaded', async () => {
   App.init();
-  loadVocabData();
+  await loadVocabData();
   loadProgress();
   renderLevelList();
   loadLevel(1);
