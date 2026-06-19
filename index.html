@@ -1,0 +1,449 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>LING English Interactive Learning System</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="css/main.css">
+<link rel="stylesheet" href="css/dashboard.css">
+<style>
+  .mini-sparkline { display: flex; align-items: flex-end; gap: 2px; height: 32px; margin-top: 6px; }
+  .mini-sparkline span {
+    flex: 1; border-radius: 2px 2px 0 0;
+    background: linear-gradient(180deg, rgba(124,58,237,0.6), rgba(124,58,237,0.2));
+    min-height: 4px;
+  }
+  .mini-sparkline span.peak { background: linear-gradient(180deg, var(--gold), rgba(246,196,83,0.3)); }
+</style>
+</head>
+<body>
+<div class="app-layout">
+
+<!-- ===== SIDEBAR 1 ===== -->
+<aside class="sidebar1" id="sidebar1">
+  <button class="sidebar1-collapse-btn" id="sidebar-collapse">‹</button>
+
+  <div class="sidebar1-logo">
+    <div class="logo-icon">🏆</div>
+    <div class="logo-text">
+      <h2>LING</h2>
+      <p>English Interactive Learning System</p>
+    </div>
+  </div>
+
+  <nav class="sidebar1-nav">
+    <a class="nav-item active" href="index.html">
+      <span class="nav-icon">🏠</span>
+      <span class="nav-label">首頁總覽</span>
+    </a>
+    <a class="nav-item" href="pages/vocabulary.html">
+      <span class="nav-icon">📖</span>
+      <span class="nav-label">單字學習</span>
+    </a>
+    <a class="nav-item" href="pages/phrases.html">
+      <span class="nav-icon">📝</span>
+      <span class="nav-label">片語學習</span>
+    </a>
+    <a class="nav-item" href="pages/grammar.html">
+      <span class="nav-icon">📚</span>
+      <span class="nav-label">文法學習</span>
+    </a>
+    <a class="nav-item" href="pages/reading.html">
+      <span class="nav-icon">📄</span>
+      <span class="nav-label">閱讀測驗</span>
+    </a>
+    <a class="nav-item" href="pages/wrongbook.html">
+      <span class="nav-icon">❌</span>
+      <span class="nav-label">錯題本</span>
+    </a>
+    <a class="nav-item" href="pages/favorite.html">
+      <span class="nav-icon">⭐</span>
+      <span class="nav-label">我的收藏</span>
+    </a>
+    <a class="nav-item" href="pages/journal.html">
+      <span class="nav-icon">📅</span>
+      <span class="nav-label">學習日誌</span>
+    </a>
+    <a class="nav-item" href="pages/game.html">
+      <span class="nav-icon">🎮</span>
+      <span class="nav-label">遊戲中心</span>
+    </a>
+    <a class="nav-item" href="pages/settings.html">
+      <span class="nav-icon">⚙️</span>
+      <span class="nav-label">設定</span>
+    </a>
+  </nav>
+
+  <div class="sidebar1-profile">
+    <div class="profile-avatar profile-avatar-img">翎</div>
+    <div class="profile-info">
+      <h4><span class="profile-name">翎庭</span> <span class="lv-badge">Lv.1</span></h4>
+      <p>LING Student</p>
+    </div>
+  </div>
+</aside>
+
+<!-- ===== MAIN CONTENT ===== -->
+<main class="main-content">
+<div class="dashboard-wrapper animate-fadeIn">
+
+  <!-- TOPBAR -->
+  <div class="topbar">
+    <div class="topbar-greeting">
+      <h1>Hi，今天也要進步一點點！<span>✨</span></h1>
+    </div>
+    <div class="topbar-right">
+      <div class="date-badge">📅 <span id="current-date"></span></div>
+      <div class="streak-badge">🔥 連續學習 <span id="streak-count">0</span> 天</div>
+    </div>
+  </div>
+
+  <!-- HERO BANNER -->
+  <div class="hero-card">
+    <div class="hero-bg"></div>
+    <img class="hero-img" src="assets/images/trophy.jpg" alt="LING Trophy" onerror="this.style.display='none'">
+    <div class="hero-overlay"></div>
+    <div class="hero-content">
+      <div class="hero-text">
+        <h2>LiNG</h2>
+        <p>English Interactive Learning System</p>
+      </div>
+    </div>
+  </div>
+
+  <!-- ROW 1: Mission + Stats + GSAT -->
+  <div class="dashboard-grid">
+
+    <!-- 今日任務 -->
+    <div class="card mission-card">
+      <h3>🎯 今日任務</h3>
+      <div class="mission-item">
+        <div class="mission-icon" style="background:rgba(124,58,237,0.15)">📖</div>
+        <div class="mission-info">
+          <p>單字學習</p>
+          <div class="mission-progress">
+            <div class="progress-bar"><div class="progress-fill" style="width:100%"></div></div>
+            <span id="vocab-mission">15 / 15</span>
+          </div>
+        </div>
+        <div class="mission-check done">✓</div>
+      </div>
+      <div class="mission-item">
+        <div class="mission-icon" style="background:rgba(246,196,83,0.1)">📝</div>
+        <div class="mission-info">
+          <p>片語學習</p>
+          <div class="mission-progress">
+            <div class="progress-bar"><div class="progress-fill" style="width:60%"></div></div>
+            <span id="phrase-mission">3 / 5</span>
+          </div>
+        </div>
+        <div class="mission-check"></div>
+      </div>
+      <div class="mission-item">
+        <div class="mission-icon" style="background:rgba(16,185,129,0.1)">📄</div>
+        <div class="mission-info">
+          <p>閱讀測驗</p>
+          <div class="mission-progress">
+            <div class="progress-bar"><div class="progress-fill" style="width:0%"></div></div>
+            <span id="reading-mission">0 / 1</span>
+          </div>
+        </div>
+        <div class="mission-check"></div>
+      </div>
+      <div class="btn-continue">🔥 繼續加油！明天會更好！</div>
+    </div>
+
+    <!-- 學習統計 -->
+    <div class="card stats-card">
+      <h3>📊 學習統計</h3>
+      <div class="stats-grid">
+        <div class="stat-item">
+          <div class="stat-value" id="stat-days">0</div>
+          <div class="stat-label">連續學習天數</div>
+          <div class="mini-sparkline">
+            <span style="height:40%"></span><span style="height:60%"></span><span style="height:45%"></span>
+            <span style="height:80%"></span><span style="height:55%"></span><span class="peak" style="height:100%"></span>
+          </div>
+        </div>
+        <div class="stat-item">
+          <div class="stat-value" id="stat-accuracy">84%</div>
+          <div class="stat-label">平均正確率</div>
+          <div class="mini-sparkline">
+            <span style="height:70%"></span><span style="height:75%"></span><span style="height:65%"></span>
+            <span style="height:80%"></span><span style="height:78%"></span><span class="peak" style="height:84%"></span>
+          </div>
+        </div>
+        <div class="stat-item">
+          <div class="stat-value" id="stat-completion">35%</div>
+          <div class="stat-label">完成進度</div>
+          <div class="mini-sparkline">
+            <span style="height:20%"></span><span style="height:25%"></span><span style="height:28%"></span>
+            <span style="height:30%"></span><span style="height:32%"></span><span class="peak" style="height:35%"></span>
+          </div>
+        </div>
+        <div class="stat-item">
+          <div class="stat-value" id="stat-time">0h</div>
+          <div class="stat-label">總學習時間</div>
+          <div class="mini-sparkline">
+            <span style="height:30%"></span><span style="height:45%"></span><span style="height:40%"></span>
+            <span style="height:60%"></span><span style="height:55%"></span><span class="peak" style="height:70%"></span>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- 均標達成度 -->
+    <div class="card gsat-card">
+      <h3>🎯 均標達成度</h3>
+      <div class="gsat-ring-container">
+        <div class="gsat-ring">
+          <svg width="100" height="100" viewBox="0 0 100 100">
+            <circle cx="50" cy="50" r="40" fill="none" stroke="rgba(255,255,255,0.08)" stroke-width="8"/>
+            <circle cx="50" cy="50" r="40" fill="none"
+              stroke="url(#gsatGrad)" stroke-width="8"
+              stroke-dasharray="251.2" stroke-dashoffset="150" stroke-linecap="round"/>
+            <defs>
+              <linearGradient id="gsatGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+                <stop offset="0%" stop-color="#7C3AED"/>
+                <stop offset="100%" stop-color="#F6C453"/>
+              </linearGradient>
+            </defs>
+          </svg>
+          <div class="gsat-ring-text">
+            <span class="pct" id="gsat-pct">42%</span>
+            <span class="lbl">均標<br>達成度</span>
+          </div>
+        </div>
+        <div class="gsat-bars">
+          <div class="gsat-bar-item">
+            <span class="gsat-bar-label">單字</span>
+            <div class="progress-bar"><div class="progress-fill" id="gsat-vocab-bar" style="width:62%"></div></div>
+            <span class="gsat-bar-pct" id="gsat-vocab-pct">62%</span>
+          </div>
+          <div class="gsat-bar-item">
+            <span class="gsat-bar-label">片語</span>
+            <div class="progress-bar"><div class="progress-fill" id="gsat-phrase-bar" style="width:48%"></div></div>
+            <span class="gsat-bar-pct" id="gsat-phrase-pct">48%</span>
+          </div>
+          <div class="gsat-bar-item">
+            <span class="gsat-bar-label">文法</span>
+            <div class="progress-bar"><div class="progress-fill" id="gsat-grammar-bar" style="width:71%"></div></div>
+            <span class="gsat-bar-pct" id="gsat-grammar-pct">71%</span>
+          </div>
+          <div class="gsat-bar-item">
+            <span class="gsat-bar-label">閱讀</span>
+            <div class="progress-bar"><div class="progress-fill" id="gsat-reading-bar" style="width:27%"></div></div>
+            <span class="gsat-bar-pct" id="gsat-reading-pct">27%</span>
+          </div>
+        </div>
+      </div>
+      <p style="font-size:11px;color:var(--text-muted);text-align:center;margin-top:12px">距離均標還需要努力！</p>
+    </div>
+  </div>
+
+  <!-- ROW 2: Weakness + Today Word + Journal + Trend -->
+  <div class="dashboard-grid" style="grid-template-columns: 1fr 1fr; margin-bottom:16px;">
+
+    <!-- 弱點分析 -->
+    <div class="card weakness-card">
+      <h3>💡 弱點分析</h3>
+      <div class="weakness-bars">
+        <div class="weakness-bar-item">
+          <span class="weakness-label">單字</span>
+          <div class="progress-bar" style="height:8px"><div class="progress-fill" style="width:82%;background:linear-gradient(90deg,#10B981,#059669)"></div></div>
+          <span class="weakness-pct" style="color:var(--success)">82%</span>
+        </div>
+        <div class="weakness-bar-item">
+          <span class="weakness-label">片語</span>
+          <div class="progress-bar" style="height:8px"><div class="progress-fill" style="width:76%;background:linear-gradient(90deg,#7C3AED,#5B21B6)"></div></div>
+          <span class="weakness-pct" style="color:#A78BFA">76%</span>
+        </div>
+        <div class="weakness-bar-item">
+          <span class="weakness-label">文法</span>
+          <div class="progress-bar" style="height:8px"><div class="progress-fill" style="width:91%;background:linear-gradient(90deg,#F6C453,#D4A017)"></div></div>
+          <span class="weakness-pct" style="color:var(--gold)">91%</span>
+        </div>
+        <div class="weakness-bar-item">
+          <span class="weakness-label">閱讀</span>
+          <div class="progress-bar" style="height:8px"><div class="progress-fill" style="width:54%;background:linear-gradient(90deg,#EF4444,#B91C1C)"></div></div>
+          <span class="weakness-pct" style="color:var(--danger)">54%</span>
+        </div>
+      </div>
+      <div class="weakness-tip">💡 建議優先補強閱讀能力，每日多讀一篇文章</div>
+    </div>
+
+    <!-- 今日推薦單字 + 今日學習紀錄 -->
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px;">
+      <div class="card today-word-card">
+        <h3>📖 今日推薦單字</h3>
+        <div class="word-display">
+          <div class="word">abandon</div>
+          <div class="phonetic">/əˈbændən/</div>
+          <div class="chinese">v. 放棄；停止</div>
+          <div class="example">He abandoned the plan after several failures.</div>
+        </div>
+        <div class="word-actions">
+          <button class="btn btn-ghost" style="font-size:12px;padding:6px">🔊 發音</button>
+          <button class="btn btn-gold" style="font-size:12px;padding:6px">⭐ 收藏</button>
+        </div>
+      </div>
+
+      <div class="card journal-card">
+        <h3>📅 今日學習紀錄</h3>
+        <div class="journal-items">
+          <div class="journal-item">
+            <span class="j-label">單字 Level 8</span>
+            <span class="j-value" style="color:var(--success)">完成 ✓</span>
+          </div>
+          <div class="journal-item">
+            <span class="j-label">片語 Level 3</span>
+            <span class="j-value" style="color:var(--success)">完成 ✓</span>
+          </div>
+          <div class="journal-item">
+            <span class="j-label">閱讀測驗 Level 2</span>
+            <span class="j-value" style="color:var(--warning)">進行中</span>
+          </div>
+        </div>
+        <a class="journal-link" href="pages/journal.html">查看完整日誌 →</a>
+      </div>
+    </div>
+  </div>
+
+  <!-- ROW 3: Trend Chart (full width) -->
+  <div class="card" style="margin-bottom:16px;">
+    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:12px;">
+      <h3 style="font-size:13px;font-weight:600;color:var(--text-sec);text-transform:uppercase;letter-spacing:0.5px;">📈 學習趨勢</h3>
+      <div class="trend-tabs">
+        <span class="trend-tab">本週</span>
+        <span class="trend-tab active">本月</span>
+        <span class="trend-tab">三個月</span>
+        <span class="trend-tab">全部</span>
+      </div>
+    </div>
+    <canvas id="trend-chart" height="80"></canvas>
+  </div>
+
+  <!-- ROW 4: Achievements -->
+  <div class="card" style="margin-bottom:16px;">
+    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:16px;">
+      <h3 style="font-size:13px;font-weight:600;color:var(--text-sec);text-transform:uppercase;letter-spacing:0.5px;">⭐ 最近獲得成就</h3>
+      <a style="font-size:12px;color:var(--purple-light);cursor:pointer;">查看全部</a>
+    </div>
+    <div class="achievements-row" id="achievements-row"></div>
+  </div>
+
+  <!-- FOOTER -->
+  <div class="footer">
+    Designed by CHIEN, HSIAO-CHUAN ｜ Ling English Interactive Learning System ｜ © All Rights Reserved
+  </div>
+
+</div>
+</main>
+</div>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.0/chart.umd.min.js"></script>
+<script src="js/app.js"></script>
+<script>
+// Dashboard stats from localStorage
+document.addEventListener('DOMContentLoaded', () => {
+  const progress = Storage.load('ling_vocabulary_progress') || {};
+  const journal = Storage.load('ling_journal') || [];
+  const profile = Storage.load('ling_profile') || {};
+
+  // Update streak
+  const streakEl = document.getElementById('streak-count');
+  const statDays = document.getElementById('stat-days');
+  const streak = Storage.load('ling_streak') || 0;
+  if(streakEl) streakEl.textContent = streak;
+  if(statDays) statDays.textContent = streak;
+
+  // Study time
+  const totalMins = journal.reduce((s,j)=>s+(j.studyTime||0),0);
+  const timeEl = document.getElementById('stat-time');
+  if(timeEl) timeEl.textContent = (totalMins/60).toFixed(1)+'h';
+
+  // GSAT progress from localStorage
+  const vp = Storage.load('ling_vocabulary_progress') || {accuracy:0};
+  const pp = Storage.load('ling_phrase_progress') || {accuracy:0};
+  const gp = Storage.load('ling_grammar_progress') || {accuracy:0};
+  const rp = Storage.load('ling_reading_progress') || {accuracy:0};
+
+  const va = vp.accuracy||0, pa = pp.accuracy||0, ga = gp.accuracy||0, ra = rp.accuracy||0;
+  const avg = Math.round((va+pa+ga+ra)/4);
+
+  const gsatEl = document.getElementById('gsat-pct');
+  if(gsatEl && avg > 0) {
+    gsatEl.textContent = avg+'%';
+    const dashoffset = 251.2 - (251.2 * avg / 100);
+    document.querySelector('.gsat-ring circle:last-of-type')?.setAttribute('stroke-dashoffset', dashoffset);
+  }
+
+  // Trend chart
+  const ctx = document.getElementById('trend-chart');
+  if(ctx) {
+    const labels = ['5/11','5/18','5/25','6/1','6/8','6/15'];
+    new Chart(ctx, {
+      type: 'line',
+      data: {
+        labels,
+        datasets: [{
+          data: [45,55,60,70,78,84],
+          borderColor: '#7C3AED',
+          backgroundColor: 'rgba(124,58,237,0.1)',
+          fill: true,
+          tension: 0.4,
+          pointBackgroundColor: '#F6C453',
+          pointRadius: 4,
+          pointHoverRadius: 6
+        }]
+      },
+      options: {
+        responsive: true,
+        maintainAspectRatio: true,
+        plugins: { legend: { display: false } },
+        scales: {
+          x: { grid: { color: 'rgba(255,255,255,0.05)' }, ticks: { color: '#71717A', font:{size:11} } },
+          y: { grid: { color: 'rgba(255,255,255,0.05)' }, ticks: { color: '#71717A', font:{size:11} }, min:0, max:100 }
+        }
+      }
+    });
+  }
+
+  // Achievements - dynamic dates
+  const ACHIEVEMENTS_DEF=[
+    {label:'連續學習 7 天',icon:'7',stroke:'#7C3AED',fill:'rgba(124,58,237,0.2)',key:'streak7',fontSize:22},
+    {label:'單字學習達成 100 個',icon:'100',stroke:'#F6C453',fill:'rgba(246,196,83,0.15)',key:'vocab100',fontSize:16},
+    {label:'完成 10 篇閱讀',icon:'📖',stroke:'#3B82F6',fill:'rgba(59,130,246,0.15)',key:'reading10',fontSize:22},
+    {label:'連續學習 30 天',icon:'🔒',stroke:'rgba(255,255,255,0.15)',fill:'rgba(255,255,255,0.03)',key:'streak30',fontSize:22,locked:true},
+    {label:'單字達成 500 個',icon:'🔒',stroke:'rgba(255,255,255,0.15)',fill:'rgba(255,255,255,0.03)',key:'vocab500',fontSize:22,locked:true}
+  ];
+  const gd=Storage.load('ling_game')||{};
+  const achDates=gd.achievementDates||{};
+  const now=new Date();
+  const todayStr=`${now.getFullYear()}.${String(now.getMonth()+1).padStart(2,'0')}.${String(now.getDate()).padStart(2,'0')}`;
+  const achRow=document.getElementById('achievements-row');
+  if(achRow){
+    achRow.innerHTML=ACHIEVEMENTS_DEF.map(a=>{
+      const dateStr=achDates[a.key]||todayStr;
+      const isText=a.icon.length<=3&&!isNaN(a.icon[0]);
+      return `<div class="achievement-item" style="${a.locked?'opacity:0.4':''}">
+        <svg width="70" height="70" viewBox="0 0 70 70">
+          <polygon points="35,5 62,20 62,50 35,65 8,50 8,20" fill="${a.fill}" stroke="${a.stroke}" stroke-width="2"/>
+          <text x="35" y="${isText?40:42}" text-anchor="middle" font-size="${a.fontSize}" font-weight="${isText?800:400}" fill="${a.locked?'#666':a.stroke}">${a.icon}</text>
+        </svg>
+        <div class="ach-label">${a.label}</div>
+        <div class="ach-date">${a.locked?'未達成':dateStr}</div>
+      </div>`;
+    }).join('');
+  }
+    tab.addEventListener('click', function() {
+      document.querySelectorAll('.trend-tab').forEach(t=>t.classList.remove('active'));
+      this.classList.add('active');
+    });
+  });
+});
+</script>
+</body>
+</html>

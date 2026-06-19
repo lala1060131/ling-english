@@ -1,0 +1,288 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>遊戲中心 — LING</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="../css/main.css">
+<style>
+.gcontent{margin-left:var(--sidebar-w);flex:1;padding:28px;max-width:1100px}
+.gheader{margin-bottom:24px}
+.gheader h1{font-size:22px;font-weight:800;margin-bottom:4px}
+.gheader p{font-size:13px;color:var(--text-muted)}
+.coin-bar{display:flex;align-items:center;justify-content:space-between;background:linear-gradient(135deg,rgba(246,196,83,.1),rgba(124,58,237,.1));border:1px solid rgba(246,196,83,.2);border-radius:var(--radius-sm);padding:16px 24px;margin-bottom:24px}
+.coin-left{display:flex;align-items:center;gap:12px}
+.coin-icon{font-size:32px}
+.coin-info h3{font-size:22px;font-weight:900;color:var(--gold)}
+.coin-info p{font-size:12px;color:var(--text-muted)}
+.coin-right{font-size:13px;color:var(--text-muted)}
+.games-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(240px,1fr));gap:16px;margin-bottom:28px}
+.game-card{background:var(--bg-card);border:1px solid var(--border);border-radius:var(--radius);padding:24px;cursor:pointer;transition:all var(--transition);position:relative;overflow:hidden}
+.game-card::before{content:'';position:absolute;inset:0;opacity:0;transition:opacity var(--transition)}
+.game-card:hover{transform:translateY(-4px);border-color:rgba(124,58,237,.4)}
+.game-card:hover::before{opacity:1}
+.game-icon{font-size:40px;margin-bottom:14px}
+.game-title{font-size:16px;font-weight:700;margin-bottom:4px}
+.game-desc{font-size:12px;color:var(--text-muted);line-height:1.5;margin-bottom:14px}
+.game-meta{display:flex;align-items:center;justify-content:space-between}
+.game-difficulty{font-size:10px;font-weight:700;padding:3px 8px;border-radius:99px}
+.diff-easy{background:rgba(16,185,129,.2);color:var(--success)}
+.diff-mid{background:rgba(246,196,83,.2);color:var(--gold)}
+.diff-hard{background:rgba(239,68,68,.2);color:var(--danger)}
+.game-coin{font-size:12px;color:var(--gold);font-weight:600}
+.play-btn{position:absolute;bottom:16px;right:16px;background:linear-gradient(135deg,var(--purple),var(--purple-dark));color:white;border:none;padding:7px 16px;border-radius:var(--radius-xs);font-size:12px;font-weight:700;cursor:pointer;opacity:0;transition:all var(--transition)}
+.game-card:hover .play-btn{opacity:1}
+.ach-section h2{font-size:16px;font-weight:700;margin-bottom:16px;display:flex;align-items:center;gap:8px}
+.ach-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(160px,1fr));gap:12px}
+.ach-card{background:var(--bg-card);border:1px solid var(--border);border-radius:var(--radius-sm);padding:16px;text-align:center}
+.ach-card.unlocked{border-color:rgba(246,196,83,.3);background:rgba(246,196,83,.05)}
+.ach-card.locked{opacity:.4}
+.ach-hex{margin:0 auto 10px}
+.ach-name{font-size:12px;font-weight:600}
+.ach-cond{font-size:10px;color:var(--text-muted);margin-top:3px}
+
+/* Typing Game Modal */
+.game-modal{position:fixed;inset:0;background:rgba(0,0,0,.8);display:flex;align-items:center;justify-content:center;z-index:999;backdrop-filter:blur(8px);opacity:0;pointer-events:none;transition:opacity .3s}
+.game-modal.show{opacity:1;pointer-events:all}
+.game-modal-inner{background:linear-gradient(135deg,#1a0d30,#0d0820);border:1px solid rgba(124,58,237,.4);border-radius:var(--radius);padding:32px;max-width:500px;width:90%;text-align:center}
+.game-modal h2{font-size:20px;font-weight:800;margin-bottom:8px}
+.game-modal p{font-size:13px;color:var(--text-muted);margin-bottom:20px}
+.type-word{font-size:48px;font-weight:900;color:var(--gold);margin-bottom:8px}
+.type-zh{font-size:16px;color:var(--text-muted);margin-bottom:20px}
+.type-input{width:100%;background:rgba(255,255,255,.06);border:2px solid rgba(124,58,237,.4);color:var(--text);padding:14px;border-radius:var(--radius-xs);font-size:18px;text-align:center;outline:none;font-family:inherit;transition:border-color var(--transition)}
+.type-input:focus{border-color:var(--purple)}
+.type-input.correct-input{border-color:var(--success);background:rgba(16,185,129,.1)}
+.type-input.wrong-input{border-color:var(--danger);background:rgba(239,68,68,.1)}
+.type-score{display:flex;justify-content:center;gap:32px;margin-top:16px}
+.ts-item .v{font-size:24px;font-weight:800}
+.ts-item .l{font-size:11px;color:var(--text-muted)}
+.close-modal{position:absolute;top:16px;right:16px;background:none;border:none;color:var(--text-muted);cursor:pointer;font-size:20px}
+</style>
+</head>
+<body>
+<div class="app-layout" style="display:flex">
+<aside class="sidebar1" id="sidebar1">
+  <button class="sidebar1-collapse-btn" id="sidebar-collapse">‹</button>
+  <div class="sidebar1-logo"><div class="logo-icon">🏆</div><div class="logo-text"><h2>LING</h2><p>English Interactive Learning System</p></div></div>
+  <nav class="sidebar1-nav">
+    <a class="nav-item" href="../index.html"><span class="nav-icon">🏠</span><span class="nav-label">首頁總覽</span></a>
+    <a class="nav-item" href="vocabulary.html"><span class="nav-icon">📖</span><span class="nav-label">單字學習</span></a>
+    <a class="nav-item" href="phrases.html"><span class="nav-icon">📝</span><span class="nav-label">片語學習</span></a>
+    <a class="nav-item" href="grammar.html"><span class="nav-icon">📚</span><span class="nav-label">文法學習</span></a>
+    <a class="nav-item" href="reading.html"><span class="nav-icon">📄</span><span class="nav-label">閱讀測驗</span></a>
+    <a class="nav-item" href="wrongbook.html"><span class="nav-icon">❌</span><span class="nav-label">錯題本</span></a>
+    <a class="nav-item" href="favorite.html"><span class="nav-icon">⭐</span><span class="nav-label">我的收藏</span></a>
+    <a class="nav-item" href="journal.html"><span class="nav-icon">📅</span><span class="nav-label">學習日誌</span></a>
+    <a class="nav-item active" href="game.html"><span class="nav-icon">🎮</span><span class="nav-label">遊戲中心</span></a>
+    <a class="nav-item" href="settings.html"><span class="nav-icon">⚙️</span><span class="nav-label">設定</span></a>
+  </nav>
+  <div class="sidebar1-profile">
+    <div class="profile-avatar profile-avatar-img">翎</div>
+    <div class="profile-info"><h4><span class="profile-name">翎庭</span> <span class="lv-badge">Lv.1</span></h4><p>LING Student</p></div>
+  </div>
+</aside>
+
+<main class="gcontent animate-fadeIn">
+  <div class="gheader">
+    <h1>🎮 遊戲中心</h1>
+    <p>用遊戲的方式鞏固學習，賺取金幣解鎖獎勵！</p>
+  </div>
+
+  <div class="coin-bar">
+    <div class="coin-left">
+      <div class="coin-icon">🪙</div>
+      <div class="coin-info"><h3 id="coin-count">0</h3><p>我的金幣</p></div>
+    </div>
+    <div class="coin-right">每完成遊戲可獲得 10–50 金幣</div>
+  </div>
+
+  <div class="games-grid">
+    <div class="game-card" style="background:linear-gradient(135deg,rgba(124,58,237,.15),rgba(91,33,182,.08))">
+      <div class="game-icon">⌨️</div>
+      <div class="game-title">單字打字挑戰</div>
+      <div class="game-desc">看中文，輸入英文！在時間內打出越多正確單字，獲得越高分數</div>
+      <div class="game-meta">
+        <span class="game-difficulty diff-easy">初級</span>
+        <span class="game-coin">🪙 +20 金幣</span>
+      </div>
+      <button class="play-btn" onclick="startTypingGame()">▶ 開始</button>
+    </div>
+    <div class="game-card" style="background:linear-gradient(135deg,rgba(246,196,83,.1),rgba(212,160,23,.05))">
+      <div class="game-icon">🎯</div>
+      <div class="game-title">片語挑戰</div>
+      <div class="game-desc">選出正確的片語用法，連續答對可獲得連擊獎勵</div>
+      <div class="game-meta">
+        <span class="game-difficulty diff-mid">中級</span>
+        <span class="game-coin">🪙 +30 金幣</span>
+      </div>
+      <button class="play-btn" onclick="comingSoon()">▶ 開始</button>
+    </div>
+    <div class="game-card" style="background:linear-gradient(135deg,rgba(16,185,129,.1),rgba(5,150,105,.05))">
+      <div class="game-icon">⚡</div>
+      <div class="game-title">文法快問快答</div>
+      <div class="game-desc">30秒內回答文法選擇題，測驗反應速度與文法直覺</div>
+      <div class="game-meta">
+        <span class="game-difficulty diff-mid">中級</span>
+        <span class="game-coin">🪙 +25 金幣</span>
+      </div>
+      <button class="play-btn" onclick="comingSoon()">▶ 開始</button>
+    </div>
+    <div class="game-card" style="background:linear-gradient(135deg,rgba(239,68,68,.1),rgba(185,28,28,.05))">
+      <div class="game-icon">🏃</div>
+      <div class="game-title">學測衝刺模式</div>
+      <div class="game-desc">模擬學測考試情境，高頻單字快速測驗，找出你的弱點！</div>
+      <div class="game-meta">
+        <span class="game-difficulty diff-hard">高級</span>
+        <span class="game-coin">🪙 +50 金幣</span>
+      </div>
+      <button class="play-btn" onclick="comingSoon()">▶ 開始</button>
+    </div>
+    <div class="game-card" style="background:linear-gradient(135deg,rgba(59,130,246,.1),rgba(29,99,237,.05))">
+      <div class="game-icon">⚔️</div>
+      <div class="game-title">錯題復仇戰</div>
+      <div class="game-desc">用你的錯題本挑戰！每消滅一個錯題獲得特別獎勵</div>
+      <div class="game-meta">
+        <span class="game-difficulty diff-hard">特殊</span>
+        <span class="game-coin">🪙 +40 金幣</span>
+      </div>
+      <button class="play-btn" onclick="comingSoon()">▶ 開始</button>
+    </div>
+  </div>
+
+  <div class="ach-section">
+    <h2>🏅 遊戲成就</h2>
+    <div class="ach-grid" id="ach-grid"></div>
+  </div>
+
+  <div class="footer" style="margin-top:24px">Designed by CHIEN, HSIAO-CHUAN ｜ Ling English Interactive Learning System ｜ © All Rights Reserved</div>
+</main>
+</div>
+
+<!-- Typing Game Modal -->
+<div class="game-modal" id="typing-modal">
+  <div class="game-modal-inner" style="position:relative">
+    <button class="close-modal" onclick="closeTyping()">✕</button>
+    <h2>⌨️ 單字打字挑戰</h2>
+    <p>看到中文，輸入正確英文單字！</p>
+    <div id="type-timer" style="font-size:13px;color:var(--warning);margin-bottom:12px">⏱ 剩餘時間：<span id="time-left">60</span> 秒</div>
+    <div class="type-word" id="type-zh-word">能力；才能</div>
+    <input type="text" class="type-input" id="type-input" placeholder="輸入英文單字..." autocomplete="off" oninput="checkTyping()">
+    <div class="type-score">
+      <div class="ts-item"><div class="v" id="t-correct">0</div><div class="l">正確</div></div>
+      <div class="ts-item"><div class="v" id="t-wrong">0</div><div class="l">錯誤</div></div>
+      <div class="ts-item"><div class="v" id="t-combo">0</div><div class="l">連擊</div></div>
+    </div>
+  </div>
+</div>
+
+<script src="../js/app.js"></script>
+<script>
+const GAME_WORDS=[
+  {word:'ability',zh:'能力；才能'},{word:'accept',zh:'接受；承認'},{word:'achieve',zh:'達成；實現'},
+  {word:'active',zh:'積極的；活躍的'},{word:'advice',zh:'建議；忠告'},{word:'affect',zh:'影響'},
+  {word:'allow',zh:'允許'},{word:'answer',zh:'答案；回答'},{word:'appear',zh:'出現；似乎'},
+  {word:'area',zh:'區域；面積'},{word:'argue',zh:'爭論；主張'},{word:'attention',zh:'注意；關注'}
+];
+
+let gameCoins=0, typingTimer=null, timeLeft=60, tCorrect=0, tWrong=0, tCombo=0, currentWord=null;
+const ACHIEVEMENTS=[
+  {id:'a1',name:'首次遊戲',cond:'完成任意遊戲',icon:'🎮',req:'games',val:1},
+  {id:'a2',name:'打字新手',cond:'打字挑戰答對10題',icon:'⌨️',req:'typing',val:10},
+  {id:'a3',name:'連擊高手',cond:'連擊5次',icon:'🔥',req:'combo',val:5},
+  {id:'a4',name:'金幣收集者',cond:'累積100金幣',icon:'🪙',req:'coins',val:100},
+  {id:'a5',name:'遊戲王者',cond:'所有遊戲各完成一次',icon:'👑',req:'all',val:5},
+  {id:'a6',name:'完美打字',cond:'打字挑戰正確率100%',icon:'✨',req:'perfect',val:1}
+];
+
+document.addEventListener('DOMContentLoaded',()=>{
+  App.init();
+  const gd=Storage.load('ling_game')||{};
+  gameCoins=gd.coins||0;
+  document.getElementById('coin-count').textContent=gameCoins;
+  renderAchievements();
+});
+
+function renderAchievements(){
+  const gd=Storage.load('ling_game')||{};
+  const grid=document.getElementById('ach-grid');
+  grid.innerHTML=ACHIEVEMENTS.map(a=>{
+    const unlocked=gd.achievements?.includes(a.id);
+    return `<div class="ach-card ${unlocked?'unlocked':'locked'}">
+      <svg class="ach-hex" width="60" height="60" viewBox="0 0 60 60">
+        <polygon points="30,4 54,17 54,43 30,56 6,43 6,17" fill="${unlocked?'rgba(246,196,83,0.15)':'rgba(255,255,255,0.03)'}" stroke="${unlocked?'#F6C453':'rgba(255,255,255,0.1)'}" stroke-width="2"/>
+        <text x="30" y="36" text-anchor="middle" font-size="20">${a.icon}</text>
+      </svg>
+      <div class="ach-name">${a.name}</div>
+      <div class="ach-cond">${a.cond}</div>
+    </div>`;}).join('');
+}
+
+function startTypingGame(){
+  tCorrect=0;tWrong=0;tCombo=0;timeLeft=60;
+  document.getElementById('t-correct').textContent=0;
+  document.getElementById('t-wrong').textContent=0;
+  document.getElementById('t-combo').textContent=0;
+  document.getElementById('time-left').textContent=60;
+  document.getElementById('type-input').value='';
+  document.getElementById('type-input').className='type-input';
+  nextWord();
+  document.getElementById('typing-modal').classList.add('show');
+  document.getElementById('type-input').focus();
+  if(typingTimer)clearInterval(typingTimer);
+  typingTimer=setInterval(()=>{
+    timeLeft--;
+    document.getElementById('time-left').textContent=timeLeft;
+    if(timeLeft<=0){clearInterval(typingTimer);endTypingGame();}
+  },1000);
+}
+
+function nextWord(){
+  currentWord=GAME_WORDS[Math.floor(Math.random()*GAME_WORDS.length)];
+  document.getElementById('type-zh-word').textContent=currentWord.zh;
+  document.getElementById('type-input').value='';
+  document.getElementById('type-input').className='type-input';
+}
+
+function checkTyping(){
+  const input=document.getElementById('type-input').value.trim().toLowerCase();
+  const target=currentWord.word.toLowerCase();
+  if(input===target){
+    document.getElementById('type-input').className='type-input correct-input';
+    tCorrect++;tCombo++;
+    document.getElementById('t-correct').textContent=tCorrect;
+    document.getElementById('t-combo').textContent=tCombo;
+    setTimeout(nextWord,300);
+  } else if(target.startsWith(input)){
+    document.getElementById('type-input').className='type-input';
+  } else if(input.length>=target.length){
+    document.getElementById('type-input').className='type-input wrong-input';
+    tWrong++;tCombo=0;
+    document.getElementById('t-wrong').textContent=tWrong;
+    document.getElementById('t-combo').textContent=0;
+  }
+}
+
+function endTypingGame(){
+  clearInterval(typingTimer);
+  const earned=tCorrect*10+Math.max(0,tCombo-2)*5;
+  gameCoins+=earned;
+  const gd=Storage.load('ling_game')||{coins:0,achievements:[]};
+  gd.coins=gameCoins;
+  if(tCorrect>=1&&!gd.achievements.includes('a1'))gd.achievements.push('a1');
+  if(tCorrect>=10&&!gd.achievements.includes('a2'))gd.achievements.push('a2');
+  if(tCombo>=5&&!gd.achievements.includes('a3'))gd.achievements.push('a3');
+  if(gameCoins>=100&&!gd.achievements.includes('a4'))gd.achievements.push('a4');
+  Storage.save('ling_game',gd);
+  document.getElementById('coin-count').textContent=gameCoins;
+  renderAchievements();
+  document.getElementById('typing-modal').classList.remove('show');
+  alert(`⌨️ 遊戲結束！\n✅ 正確：${tCorrect} 題\n❌ 錯誤：${tWrong} 題\n🪙 獲得：${earned} 金幣`);
+}
+
+function closeTyping(){clearInterval(typingTimer);document.getElementById('typing-modal').classList.remove('show');}
+function comingSoon(){alert('🚀 此遊戲即將推出，敬請期待！');}
+</script>
+</body>
+</html>

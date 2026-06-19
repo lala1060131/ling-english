@@ -1,0 +1,323 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>文法學習 — LING</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="../css/main.css">
+<style>
+.sidebar2{width:260px;min-height:100vh;background:rgba(10,8,20,.97);border-right:1px solid var(--border);position:fixed;left:var(--sidebar-w);top:0;bottom:0;z-index:90;overflow-y:auto}
+.sidebar2-header{padding:20px 16px 14px;border-bottom:1px solid var(--border);position:sticky;top:0;background:rgba(10,8,20,.97);z-index:1}
+.sidebar2-header h2{font-size:16px;font-weight:700;margin-bottom:4px}
+.sidebar2-header p{font-size:12px;color:var(--text-muted)}
+.chapter-list{padding:8px}
+.chapter-item{display:flex;align-items:center;gap:10px;padding:12px;border-radius:var(--radius-xs);cursor:pointer;margin-bottom:4px;transition:all var(--transition);border:1px solid transparent}
+.chapter-item:hover{background:var(--bg-card)}
+.chapter-item.active{background:linear-gradient(135deg,rgba(124,58,237,.25),rgba(91,33,182,.15));border-color:rgba(124,58,237,.3)}
+.chapter-item.done{border-color:rgba(16,185,129,.2)}
+.ch-num{width:32px;height:32px;border-radius:8px;background:rgba(255,255,255,.05);display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:700;color:var(--text-muted);flex-shrink:0}
+.chapter-item.active .ch-num{background:linear-gradient(135deg,var(--purple),var(--purple-dark));color:white}
+.chapter-item.done .ch-num{background:rgba(16,185,129,.2);color:var(--success)}
+.ch-info p{font-size:13px;font-weight:500}
+.ch-info span{font-size:11px;color:var(--text-muted)}
+.grammar-content{margin-left:calc(var(--sidebar-w) + 260px);flex:1;padding:24px;min-height:100vh}
+.grammar-header{margin-bottom:20px}
+.grammar-header h1{font-size:22px;font-weight:800;margin-bottom:4px}
+.grammar-header p{font-size:13px;color:var(--text-muted)}
+
+.concept-card{background:var(--bg-card);border:1px solid var(--border);border-radius:var(--radius);padding:24px;margin-bottom:16px}
+.concept-title{font-size:11px;text-transform:uppercase;letter-spacing:.5px;color:var(--text-muted);margin-bottom:12px}
+.concept-points{display:flex;flex-direction:column;gap:8px}
+.concept-point{display:flex;align-items:flex-start;gap:10px;padding:10px 12px;background:rgba(124,58,237,.08);border:1px solid rgba(124,58,237,.15);border-radius:var(--radius-xs)}
+.concept-point .dot{width:6px;height:6px;border-radius:50%;background:var(--gold);flex-shrink:0;margin-top:6px}
+.concept-point p{font-size:14px;color:var(--text-sec);line-height:1.5}
+
+.timeline-card{background:var(--bg-card);border:1px solid var(--border);border-radius:var(--radius);padding:24px;margin-bottom:16px}
+.timeline{display:flex;align-items:center;gap:0;overflow-x:auto;padding:8px 0}
+.tl-item{display:flex;align-items:center;flex-shrink:0}
+.tl-box{background:linear-gradient(135deg,rgba(124,58,237,.25),rgba(91,33,182,.15));border:1px solid rgba(124,58,237,.4);border-radius:8px;padding:8px 14px;font-size:13px;font-weight:600;color:#C4B5FD;white-space:nowrap;text-align:center}
+.tl-box.current{background:linear-gradient(135deg,rgba(246,196,83,.2),rgba(212,160,23,.1));border-color:rgba(246,196,83,.5);color:var(--gold)}
+.tl-arrow{font-size:18px;color:var(--text-muted);padding:0 8px;flex-shrink:0}
+
+.examples-card{background:var(--bg-card);border:1px solid var(--border);border-radius:var(--radius);padding:24px;margin-bottom:16px}
+.ex-item{display:flex;gap:12px;padding:10px 0;border-bottom:1px solid var(--border)}
+.ex-item:last-child{border-bottom:none}
+.ex-num{width:24px;height:24px;border-radius:50%;background:linear-gradient(135deg,var(--purple),var(--purple-dark));display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:700;color:white;flex-shrink:0;margin-top:2px}
+.ex-content .en{font-size:14px;color:var(--text);font-weight:500}
+.ex-content .zh{font-size:12px;color:var(--text-muted);margin-top:2px}
+
+.mistakes-card{background:rgba(239,68,68,.04);border:1px solid rgba(239,68,68,.15);border-radius:var(--radius);padding:24px;margin-bottom:16px}
+.mistakes-card h3{font-size:14px;font-weight:700;color:#FCA5A5;margin-bottom:16px;display:flex;align-items:center;gap:6px}
+.mistake-row{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:10px}
+.m-wrong{background:rgba(239,68,68,.1);border:1px solid rgba(239,68,68,.2);border-radius:var(--radius-xs);padding:10px 12px}
+.m-wrong .tag{font-size:10px;color:var(--danger);font-weight:700;margin-bottom:4px}
+.m-wrong .sent{font-size:13px;color:var(--text-sec)}
+.m-correct{background:rgba(16,185,129,.08);border:1px solid rgba(16,185,129,.2);border-radius:var(--radius-xs);padding:10px 12px}
+.m-correct .tag{font-size:10px;color:var(--success);font-weight:700;margin-bottom:4px}
+.m-correct .sent{font-size:13px;color:var(--text-sec)}
+
+.mini-quiz-card{background:var(--bg-card);border:1px solid rgba(246,196,83,.2);border-radius:var(--radius);padding:24px;margin-bottom:16px}
+.mini-quiz-card h3{font-size:14px;font-weight:700;color:var(--gold);margin-bottom:16px;display:flex;align-items:center;gap:6px}
+.mq-question{font-size:16px;color:var(--text);margin-bottom:16px;line-height:1.6}
+.mq-options{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:16px}
+.mq-btn{background:var(--bg-card);border:1px solid var(--border);border-radius:var(--radius-xs);padding:12px;font-size:14px;color:var(--text);cursor:pointer;text-align:left;display:flex;align-items:center;gap:8px;transition:all var(--transition)}
+.mq-btn:hover:not(:disabled){background:rgba(124,58,237,.15);border-color:rgba(124,58,237,.4)}
+.mq-btn.correct{background:rgba(16,185,129,.15);border-color:var(--success);color:var(--success)}
+.mq-btn.wrong{background:rgba(239,68,68,.15);border-color:var(--danger);color:var(--danger)}
+.mq-label{width:22px;height:22px;border-radius:50%;background:rgba(255,255,255,.08);display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:700;flex-shrink:0}
+.chapter-nav{display:flex;justify-content:space-between;align-items:center;margin-top:8px}
+</style>
+</head>
+<body>
+<div class="app-layout" style="display:flex">
+<aside class="sidebar1" id="sidebar1">
+  <button class="sidebar1-collapse-btn" id="sidebar-collapse">‹</button>
+  <div class="sidebar1-logo"><div class="logo-icon">🏆</div><div class="logo-text"><h2>LING</h2><p>English Interactive Learning System</p></div></div>
+  <nav class="sidebar1-nav">
+    <a class="nav-item" href="../index.html"><span class="nav-icon">🏠</span><span class="nav-label">首頁總覽</span></a>
+    <a class="nav-item" href="vocabulary.html"><span class="nav-icon">📖</span><span class="nav-label">單字學習</span></a>
+    <a class="nav-item" href="phrases.html"><span class="nav-icon">📝</span><span class="nav-label">片語學習</span></a>
+    <a class="nav-item active" href="grammar.html"><span class="nav-icon">📚</span><span class="nav-label">文法學習</span></a>
+    <a class="nav-item" href="reading.html"><span class="nav-icon">📄</span><span class="nav-label">閱讀測驗</span></a>
+    <a class="nav-item" href="wrongbook.html"><span class="nav-icon">❌</span><span class="nav-label">錯題本</span></a>
+    <a class="nav-item" href="favorite.html"><span class="nav-icon">⭐</span><span class="nav-label">我的收藏</span></a>
+    <a class="nav-item" href="journal.html"><span class="nav-icon">📅</span><span class="nav-label">學習日誌</span></a>
+    <a class="nav-item" href="game.html"><span class="nav-icon">🎮</span><span class="nav-label">遊戲中心</span></a>
+    <a class="nav-item" href="settings.html"><span class="nav-icon">⚙️</span><span class="nav-label">設定</span></a>
+  </nav>
+  <div class="sidebar1-profile">
+    <div class="profile-avatar profile-avatar-img">翎</div>
+    <div class="profile-info"><h4><span class="profile-name">翎庭</span> <span class="lv-badge">Lv.1</span></h4><p>LING Student</p></div>
+  </div>
+</aside>
+
+<aside class="sidebar2">
+  <div class="sidebar2-header"><h2>📚 文法學習</h2><p>15 大文法章節，全部免費解鎖！</p></div>
+  <div class="chapter-list" id="chapter-list"></div>
+</aside>
+
+<main class="grammar-content animate-fadeIn">
+  <div class="grammar-header">
+    <h1 id="ch-title">📚 01 — 現在簡單式 Present Simple</h1>
+    <p id="ch-subtitle">表達習慣、事實與永久狀態的基礎時態</p>
+  </div>
+
+  <div class="concept-card">
+    <div class="concept-title">📋 概念說明</div>
+    <div class="concept-points" id="concept-points"></div>
+  </div>
+
+  <div class="timeline-card">
+    <div class="concept-title" style="margin-bottom:16px">⏱ 時態視覺化</div>
+    <div id="timeline-visual"></div>
+  </div>
+
+  <div class="examples-card">
+    <div class="concept-title" style="margin-bottom:12px">📝 經典例句</div>
+    <div id="examples-list"></div>
+  </div>
+
+  <div class="mistakes-card">
+    <h3>⚠️ 常見錯誤</h3>
+    <div id="mistakes-list"></div>
+  </div>
+
+  <div class="mini-quiz-card">
+    <h3>🎯 即時小測驗</h3>
+    <div id="quiz-area"></div>
+  </div>
+
+  <div class="chapter-nav">
+    <button class="btn btn-ghost" onclick="prevChapter()">← 上一章節</button>
+    <span style="font-size:13px;color:var(--text-muted)" id="ch-counter">1 / 15</span>
+    <button class="btn btn-primary" onclick="nextChapter()">下一章節 →</button>
+  </div>
+  <div class="footer" style="margin-top:20px">Designed by CHIEN, HSIAO-CHUAN ｜ Ling English Interactive Learning System ｜ © All Rights Reserved</div>
+</main>
+</div>
+
+<script src="../js/app.js"></script>
+<script>
+const CHAPTERS=[
+  {id:1,title:"現在簡單式",en:"Present Simple",subtitle:"表達習慣、事實與永久狀態",
+   concepts:["表達日常習慣或例行公事","描述普遍事實或科學定律","表達永久性的狀態或情況","第三人稱單數動詞加 -s/-es"],
+   timeline:["過去","習慣/事實","現在","習慣/事實","未來"],
+   examples:[{en:"She goes to school every day.",zh:"她每天上學。"},{en:"The sun rises in the east.",zh:"太陽從東方升起。"},{en:"Water boils at 100°C.",zh:"水在100°C時沸騰。"}],
+   mistakes:[{wrong:"I am go to school.",correct:"I go to school."},{wrong:"She go to work.",correct:"She goes to work."}],
+   quiz:{q:"She ____ to school every day.",opts:["go","goes","going","went"],ans:1}},
+  {id:2,title:"過去簡單式",en:"Past Simple",subtitle:"描述過去發生的動作或狀態",
+   concepts:["描述過去某一時間點的動作","描述過去的習慣或狀態","規則動詞加 -ed，不規則動詞需記憶","常與時間副詞連用：yesterday, ago, last..."],
+   timeline:["過去✓","過去動作","現在","─","未來"],
+   examples:[{en:"She visited Paris last year.",zh:"她去年造訪了巴黎。"},{en:"He studied English for two hours.",zh:"他英文讀了兩個小時。"},{en:"We went to the beach yesterday.",zh:"我們昨天去了海邊。"}],
+   mistakes:[{wrong:"She goed to the store.",correct:"She went to the store."},{wrong:"Yesterday I work.",correct:"Yesterday I worked."}],
+   quiz:{q:"He ____ a book yesterday.",opts:["read","reads","reading","readed"],ans:0}},
+  {id:3,title:"現在進行式",en:"Present Continuous",subtitle:"描述正在發生的動作",
+   concepts:["表達此刻正在進行的動作","表達暫時性的動作或情況","be + V-ing 的結構","常與 now、at the moment 連用"],
+   timeline:["過去","─","現在進行中▶","─","未來"],
+   examples:[{en:"She is reading a book now.",zh:"她現在正在讀書。"},{en:"They are playing football.",zh:"他們正在踢足球。"},{en:"I am studying English.",zh:"我正在學英文。"}],
+   mistakes:[{wrong:"She is go to school.",correct:"She is going to school."},{wrong:"I am know him.",correct:"I know him. (狀態動詞不用進行式)"}],
+   quiz:{q:"Look! He ____ in the park.",opts:["run","runs","is running","ran"],ans:2}},
+  {id:4,title:"被動語態",en:"Passive Voice",subtitle:"強調動作承受者而非執行者",
+   concepts:["將動作的受詞移至主詞位置","結構：be + 過去分詞 (p.p.)","用於不知道或不重要誰執行動作時","可用於各種時態"],
+   timeline:["主動句","→","被動句轉換"],
+   examples:[{en:"The book was written by Hemingway.",zh:"這本書是由海明威所寫的。"},{en:"English is spoken worldwide.",zh:"英語在全球使用。"},{en:"The cake was eaten by Tom.",zh:"蛋糕被湯姆吃掉了。"}],
+   mistakes:[{wrong:"The letter written by her.",correct:"The letter was written by her."},{wrong:"She is wrote a book.",correct:"A book is written by her."}],
+   quiz:{q:"The window ____ by the boy.",opts:["broke","was broken","is broke","broken"],ans:1}},
+  {id:5,title:"情態動詞",en:"Modal Verbs",subtitle:"表達能力、可能性、義務或請求",
+   concepts:["can/could：能力、可能性、請求","may/might：許可、可能性","must/have to：義務、必要性","should/ought to：建議、義務"],
+   timeline:["能力 can","義務 must","建議 should","可能 may"],
+   examples:[{en:"You must study hard.",zh:"你必須努力學習。"},{en:"She can speak three languages.",zh:"她能說三種語言。"},{en:"You should see a doctor.",zh:"你應該去看醫生。"}],
+   mistakes:[{wrong:"He can to swim.",correct:"He can swim. (後接原形動詞)"},{wrong:"She musts go.",correct:"She must go. (情態動詞不加s)"}],
+   quiz:{q:"She ____ speak French fluently.",opts:["can","cans","is can","to can"],ans:0}},
+  {id:6,title:"不定詞",en:"Infinitives",subtitle:"to + 動詞原形的用法",
+   concepts:["作名詞用：To learn is important.","作形容詞用：I have a book to read.","作副詞用：She went out to buy food.","常見搭配：want/hope/plan/decide to V"],
+   timeline:["名詞用法","形容詞用法","副詞用法"],
+   examples:[{en:"I want to learn English.",zh:"我想學英語。"},{en:"She has a report to finish.",zh:"她有一份報告要完成。"},{en:"He studied hard to pass the exam.",zh:"他努力讀書以通過考試。"}],
+   mistakes:[{wrong:"She wants learn.",correct:"She wants to learn."},{wrong:"I hope going.",correct:"I hope to go."}],
+   quiz:{q:"She decided ____ a doctor.",opts:["become","to become","becoming","becomes"],ans:1}},
+  {id:7,title:"動名詞",en:"Gerunds",subtitle:"動詞-ing 作名詞的用法",
+   concepts:["動名詞作主詞：Swimming is good exercise.","動名詞作受詞：I enjoy reading.","特定動詞後接動名詞：enjoy, avoid, finish...","介系詞後接動名詞：interested in + Ving"],
+   timeline:["主詞用法","受詞用法","介系詞後"],
+   examples:[{en:"Swimming is my favorite exercise.",zh:"游泳是我最喜歡的運動。"},{en:"She enjoys reading novels.",zh:"她喜歡讀小說。"},{en:"He is good at playing piano.",zh:"他很擅長彈鋼琴。"}],
+   mistakes:[{wrong:"She enjoys to read.",correct:"She enjoys reading."},{wrong:"I avoid to make mistakes.",correct:"I avoid making mistakes."}],
+   quiz:{q:"He enjoys ____ basketball.",opts:["play","to play","playing","played"],ans:2}},
+  {id:8,title:"關係代名詞",en:"Relative Pronouns",subtitle:"who, which, that 連接子句",
+   concepts:["who：代替人（主格或受格）","which：代替事物","that：代替人或事物","whose：所有格，代替人或動物"],
+   timeline:["先行詞(人)who","先行詞(物)which","that通用"],
+   examples:[{en:"The girl who won the prize is my friend.",zh:"贏得獎項的那個女孩是我的朋友。"},{en:"This is the book which I bought.",zh:"這是我買的那本書。"},{en:"She is the teacher that everyone likes.",zh:"她是大家都喜歡的老師。"}],
+   mistakes:[{wrong:"The man which came is my uncle.",correct:"The man who came is my uncle."},{wrong:"The book who I read.",correct:"The book which I read."}],
+   quiz:{q:"The woman ____ lives next door is a doctor.",opts:["which","who","whose","whom"],ans:1}},
+  {id:9,title:"名詞子句",en:"Noun Clauses",subtitle:"that/whether/wh- 引導的名詞子句",
+   concepts:["that 子句作受詞：I know that she is right.","whether/if 子句：間接問句","wh- 疑問詞引導：what, where, how...","子句中保持陳述句語序"],
+   timeline:["主要子句","that/wh-","名詞子句"],
+   examples:[{en:"I believe that she will succeed.",zh:"我相信她會成功。"},{en:"He asked whether I was free.",zh:"他問我是否有空。"},{en:"I don't know where she went.",zh:"我不知道她去哪裡了。"}],
+   mistakes:[{wrong:"I know where is she.",correct:"I know where she is."},{wrong:"She asked that did I know.",correct:"She asked whether I knew."}],
+   quiz:{q:"I wonder ____ she will come.",opts:["that","if","what","because"],ans:1}},
+  {id:10,title:"副詞子句",en:"Adverb Clauses",subtitle:"表時間、原因、條件等關係",
+   concepts:["時間子句：when, while, after, before, until","原因子句：because, since, as","條件子句：if, unless","讓步子句：although, even though"],
+   timeline:["時間 when","原因 because","條件 if","讓步 although"],
+   examples:[{en:"Although it was raining, she went out.",zh:"雖然在下雨，她還是出去了。"},{en:"If you study hard, you will pass.",zh:"如果你努力學習，你就會通過。"},{en:"She left before he arrived.",zh:"她在他到來之前就離開了。"}],
+   mistakes:[{wrong:"Although it rained, but she went out.",correct:"Although it rained, she went out."},{wrong:"Because she was tired, so she slept.",correct:"Because she was tired, she slept."}],
+   quiz:{q:"____ she was tired, she kept working.",opts:["Because","Although","If","When"],ans:1}},
+  {id:11,title:"形容詞子句",en:"Adjective Clauses",subtitle:"修飾名詞的關係子句",
+   concepts:["限定用法：不加逗號，限定範圍","非限定用法：加逗號，補充說明","關係代名詞可省略（受格時）","介系詞 + 關係代名詞的用法"],
+   timeline:["先行詞","關係代名詞","形容詞子句"],
+   examples:[{en:"The book that I read was excellent.",zh:"我讀的那本書非常好。"},{en:"My sister, who is a nurse, helps others.",zh:"我妹妹是護士，她幫助別人。"},{en:"This is the place where I was born.",zh:"這是我出生的地方。"}],
+   mistakes:[{wrong:"The girl, that I met, is kind.",correct:"The girl who I met is kind."},{wrong:"The book which I read it.",correct:"The book which I read (刪掉it)"}],
+   quiz:{q:"The movie ____ we watched was great.",opts:["who","whom","that","whose"],ans:2}},
+  {id:12,title:"條件句",en:"Conditionals",subtitle:"If 條件句的四種類型",
+   concepts:["零條件：If + 現在式, 現在式（科學事實）","第一條件：If + 現在式, will + V（可能情況）","第二條件：If + 過去式, would + V（假設）","第三條件：If + 過去完成式, would have + p.p.（與過去事實相反）"],
+   timeline:["零條件","第一條件","第二條件","第三條件"],
+   examples:[{en:"If you heat ice, it melts.",zh:"如果你加熱冰塊，它會融化。"},{en:"If it rains, I will stay home.",zh:"如果下雨，我會待在家。"},{en:"If I were rich, I would travel.",zh:"如果我有錢，我會去旅行。"}],
+   mistakes:[{wrong:"If I will go, I call you.",correct:"If I go, I will call you."},{wrong:"If I would be you, I study more.",correct:"If I were you, I would study more."}],
+   quiz:{q:"If I ____ more money, I would buy a car.",opts:["have","had","will have","would have"],ans:1}},
+  {id:13,title:"比較句型",en:"Comparatives",subtitle:"形容詞的比較級與最高級",
+   concepts:["比較級：adj + -er / more + adj + than","最高級：the + adj + -est / the most + adj","不規則變化：good→better→best, bad→worse→worst","as...as 表示相同程度"],
+   timeline:["原級 as...as","比較級 -er/more","最高級 -est/most"],
+   examples:[{en:"She is taller than her sister.",zh:"她比她的妹妹高。"},{en:"This is the most interesting book.",zh:"這是最有趣的書。"},{en:"He runs as fast as a cheetah.",zh:"他跑得和獵豹一樣快。"}],
+   mistakes:[{wrong:"She is more tall than him.",correct:"She is taller than him."},{wrong:"This is the more good choice.",correct:"This is the better choice."}],
+   quiz:{q:"She is ____ student in the class.",opts:["the most smart","the smartest","smarter","more smart"],ans:1}},
+  {id:14,title:"介系詞",en:"Prepositions",subtitle:"表示時間、地點、方向等關係",
+   concepts:["時間介系詞：at(時刻), on(日期), in(月份/年份)","地點介系詞：at(小地點), in(大地方), on(表面)","方向介系詞：to, towards, from, through","常見搭配：interested in, good at, afraid of"],
+   timeline:["時間 at/on/in","地點 at/in/on","方向 to/from"],
+   examples:[{en:"The meeting is at 3 o'clock on Monday.",zh:"會議在週一三點。"},{en:"She lives in Taipei.",zh:"她住在台北。"},{en:"He is good at playing guitar.",zh:"他很擅長彈吉他。"}],
+   mistakes:[{wrong:"I am interested on music.",correct:"I am interested in music."},{wrong:"She is afraid from dogs.",correct:"She is afraid of dogs."}],
+   quiz:{q:"I was born ____ 1998.",opts:["at","on","in","by"],ans:2}},
+  {id:15,title:"連接詞",en:"Conjunctions",subtitle:"and, but, or, so, because 等用法",
+   concepts:["對等連接詞：and, but, or, so, yet","從屬連接詞：because, although, if, when","相關連接詞：both...and, either...or, not only...but also","注意：不可用逗號連接兩個完整句子（逗號謬誤）"],
+   timeline:["對等連接","從屬連接","相關連接"],
+   examples:[{en:"She is smart and hardworking.",zh:"她既聰明又努力。"},{en:"Not only is he tall, but he is also handsome.",zh:"他不僅高，而且帥。"},{en:"Either you study or you fail.",zh:"你要麼學習，要麼失敗。"}],
+   mistakes:[{wrong:"She studied hard, so but she failed.",correct:"She studied hard, but she failed."},{wrong:"Although he was tired, but he worked.",correct:"Although he was tired, he worked."}],
+   quiz:{q:"____ she was sick, she went to school.",opts:["Because","Although","So","And"],ans:1}}
+];
+
+let currentCh=0;
+let quizAnswered=false;
+
+document.addEventListener('DOMContentLoaded',()=>{
+  App.init();
+  renderChapterList();
+  renderChapter(0);
+});
+
+function renderChapterList(){
+  const gp=Storage.load('ling_grammar_progress')||{};
+  const list=document.getElementById('chapter-list');
+  list.innerHTML=CHAPTERS.map((ch,i)=>`
+    <div class="chapter-item ${i===currentCh?'active':''} ${gp[i]?.done?'done':''}" onclick="selectChapter(${i})">
+      <div class="ch-num">${i+1<10?'0'+(i+1):i+1}</div>
+      <div class="ch-info"><p>${ch.title}</p><span>${ch.en}</span></div>
+      ${gp[i]?.done?'<span style="font-size:12px;color:var(--success)">✓</span>':''}
+    </div>`).join('');
+}
+
+function selectChapter(i){currentCh=i;renderChapterList();renderChapter(i);}
+
+function renderChapter(i){
+  const ch=CHAPTERS[i];
+  document.getElementById('ch-title').textContent=`📚 ${String(i+1).padStart(2,'0')} — ${ch.title} ${ch.en}`;
+  document.getElementById('ch-subtitle').textContent=ch.subtitle;
+  document.getElementById('ch-counter').textContent=`${i+1} / ${CHAPTERS.length}`;
+
+  document.getElementById('concept-points').innerHTML=ch.concepts.map(c=>`
+    <div class="concept-point"><div class="dot"></div><p>${c}</p></div>`).join('');
+
+  const midIdx=Math.floor(ch.timeline.length/2);
+  document.getElementById('timeline-visual').innerHTML=`
+    <div class="timeline">${ch.timeline.map((t,ti)=>`
+      ${ti>0?'<span class="tl-arrow">→</span>':''}
+      <div class="tl-item"><div class="tl-box ${ti===midIdx?'current':''}">${t}</div></div>`).join('')}
+    </div>`;
+
+  document.getElementById('examples-list').innerHTML=ch.examples.map((ex,i)=>`
+    <div class="ex-item">
+      <div class="ex-num">${i+1}</div>
+      <div class="ex-content"><div class="en">${ex.en}</div><div class="zh">${ex.zh}</div></div>
+    </div>`).join('');
+
+  document.getElementById('mistakes-list').innerHTML=ch.mistakes.map(m=>`
+    <div class="mistake-row">
+      <div class="m-wrong"><div class="tag">❌ 錯誤</div><div class="sent">${m.wrong}</div></div>
+      <div class="m-correct"><div class="tag">✅ 正確</div><div class="sent">${m.correct}</div></div>
+    </div>`).join('');
+
+  quizAnswered=false;
+  const q=ch.quiz;
+  const labels=['A','B','C','D'];
+  document.getElementById('quiz-area').innerHTML=`
+    <div class="mq-question">${q.q.replace('____','<span style="color:var(--gold);font-weight:700">____</span>')}</div>
+    <div class="mq-options">${q.opts.map((opt,oi)=>`
+      <button class="mq-btn" onclick="answerQuiz(this,${oi},${q.ans})">
+        <span class="mq-label">${labels[oi]}</span>${opt}
+      </button>`).join('')}
+    </div>
+    <div id="quiz-feedback" style="font-size:13px;min-height:20px;color:var(--text-muted)"></div>`;
+}
+
+function answerQuiz(btn,selected,correct){
+  if(quizAnswered)return;
+  quizAnswered=true;
+  document.querySelectorAll('.mq-btn').forEach((b,i)=>{
+    if(i===correct)b.classList.add('correct');
+    else if(b===btn&&selected!==correct)b.classList.add('wrong');
+    b.disabled=true;
+  });
+  const fb=document.getElementById('quiz-feedback');
+  if(selected===correct){
+    fb.textContent='🎉 答對了！';fb.style.color='var(--success)';
+    const gp=Storage.load('ling_grammar_progress')||{};
+    if(!gp[currentCh])gp[currentCh]={};gp[currentCh].done=true;
+    Storage.save('ling_grammar_progress',gp);
+    renderChapterList();
+  } else {
+    fb.textContent='❌ 答錯了，再複習一次吧！';fb.style.color='var(--danger)';
+  }
+}
+
+function prevChapter(){if(currentCh>0){currentCh--;renderChapterList();renderChapter(currentCh);}}
+function nextChapter(){if(currentCh<CHAPTERS.length-1){currentCh++;renderChapterList();renderChapter(currentCh);}}
+</script>
+</body>
+</html>

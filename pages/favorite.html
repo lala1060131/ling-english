@@ -1,0 +1,162 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>我的收藏 — LING</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="../css/main.css">
+<style>
+.fcontent{margin-left:var(--sidebar-w);flex:1;padding:28px}
+.fheader{margin-bottom:24px}
+.fheader h1{font-size:22px;font-weight:800;margin-bottom:4px}
+.fheader p{font-size:13px;color:var(--text-muted)}
+.ftabs{display:flex;gap:4px;background:var(--bg-card);border:1px solid var(--border);border-radius:var(--radius-xs);padding:4px;margin-bottom:20px;width:fit-content}
+.ftab{padding:7px 18px;border-radius:6px;font-size:13px;font-weight:500;cursor:pointer;color:var(--text-muted);transition:all var(--transition)}
+.ftab.active{background:linear-gradient(135deg,var(--purple),var(--purple-dark));color:white}
+.fsearch{display:flex;gap:10px;margin-bottom:20px}
+.fsearch input{flex:1;background:var(--bg-card);border:1px solid var(--border);color:var(--text);padding:10px 16px;border-radius:var(--radius-xs);font-size:14px}
+.fsearch input:focus{outline:none;border-color:var(--purple)}
+.fav-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(220px,1fr));gap:12px}
+.fav-card{background:var(--bg-card);border:1px solid var(--border);border-radius:var(--radius-sm);padding:16px;cursor:pointer;transition:all var(--transition);position:relative}
+.fav-card:hover{background:var(--bg-card-hover);border-color:rgba(124,58,237,.3);transform:translateY(-2px)}
+.fav-word{font-size:22px;font-weight:800;color:var(--gold);margin-bottom:4px}
+.fav-zh{font-size:13px;color:var(--text-muted);margin-bottom:8px}
+.fav-example{font-size:12px;color:var(--text-sec);line-height:1.4}
+.fav-remove{position:absolute;top:10px;right:10px;background:none;border:none;color:var(--text-muted);cursor:pointer;font-size:16px;transition:color var(--transition)}
+.fav-remove:hover{color:var(--danger)}
+.fav-type{position:absolute;bottom:10px;right:10px;font-size:10px;padding:2px 8px;border-radius:99px;background:rgba(124,58,237,.2);color:#A78BFA;font-weight:700}
+.empty-state{text-align:center;padding:60px;color:var(--text-muted)}
+.empty-state .icon{font-size:48px;margin-bottom:12px}
+.fav-stats{display:flex;gap:16px;margin-bottom:16px}
+.fav-stat{background:var(--bg-card);border:1px solid var(--border);border-radius:var(--radius-xs);padding:10px 20px;display:flex;align-items:center;gap:8px}
+.fav-stat .n{font-size:20px;font-weight:800;color:var(--gold)}
+.fav-stat .l{font-size:12px;color:var(--text-muted)}
+</style>
+</head>
+<body>
+<div class="app-layout" style="display:flex">
+<aside class="sidebar1" id="sidebar1">
+  <button class="sidebar1-collapse-btn" id="sidebar-collapse">‹</button>
+  <div class="sidebar1-logo"><div class="logo-icon">🏆</div><div class="logo-text"><h2>LING</h2><p>English Interactive Learning System</p></div></div>
+  <nav class="sidebar1-nav">
+    <a class="nav-item" href="../index.html"><span class="nav-icon">🏠</span><span class="nav-label">首頁總覽</span></a>
+    <a class="nav-item" href="vocabulary.html"><span class="nav-icon">📖</span><span class="nav-label">單字學習</span></a>
+    <a class="nav-item" href="phrases.html"><span class="nav-icon">📝</span><span class="nav-label">片語學習</span></a>
+    <a class="nav-item" href="grammar.html"><span class="nav-icon">📚</span><span class="nav-label">文法學習</span></a>
+    <a class="nav-item" href="reading.html"><span class="nav-icon">📄</span><span class="nav-label">閱讀測驗</span></a>
+    <a class="nav-item" href="wrongbook.html"><span class="nav-icon">❌</span><span class="nav-label">錯題本</span></a>
+    <a class="nav-item active" href="favorite.html"><span class="nav-icon">⭐</span><span class="nav-label">我的收藏</span></a>
+    <a class="nav-item" href="journal.html"><span class="nav-icon">📅</span><span class="nav-label">學習日誌</span></a>
+    <a class="nav-item" href="game.html"><span class="nav-icon">🎮</span><span class="nav-label">遊戲中心</span></a>
+    <a class="nav-item" href="settings.html"><span class="nav-icon">⚙️</span><span class="nav-label">設定</span></a>
+  </nav>
+  <div class="sidebar1-profile">
+    <div class="profile-avatar profile-avatar-img">翎</div>
+    <div class="profile-info"><h4><span class="profile-name">翎庭</span> <span class="lv-badge">Lv.1</span></h4><p>LING Student</p></div>
+  </div>
+</aside>
+
+<main class="fcontent animate-fadeIn">
+  <div class="fheader">
+    <h1>⭐ 我的收藏</h1>
+    <p>你收藏的單字、片語、文法與閱讀，一次快速複習！</p>
+  </div>
+
+  <div class="fav-stats">
+    <div class="fav-stat"><div class="n" id="f-vocab">0</div><div class="l">收藏單字</div></div>
+    <div class="fav-stat"><div class="n" id="f-phrase">0</div><div class="l">收藏片語</div></div>
+    <div class="fav-stat"><div class="n" id="f-grammar">0</div><div class="l">收藏文法</div></div>
+    <div class="fav-stat"><div class="n" id="f-reading">0</div><div class="l">收藏閱讀</div></div>
+  </div>
+
+  <div class="ftabs">
+    <div class="ftab active" onclick="switchFavTab(this,'all')">全部</div>
+    <div class="ftab" onclick="switchFavTab(this,'vocabulary')">單字</div>
+    <div class="ftab" onclick="switchFavTab(this,'phrases')">片語</div>
+    <div class="ftab" onclick="switchFavTab(this,'grammar')">文法</div>
+    <div class="ftab" onclick="switchFavTab(this,'reading')">閱讀</div>
+  </div>
+
+  <div class="fsearch">
+    <input type="text" placeholder="搜尋收藏的內容..." id="search-input" oninput="renderFavorites()">
+  </div>
+
+  <div class="fav-grid" id="fav-grid"></div>
+
+  <div class="footer" style="margin-top:24px">Designed by CHIEN, HSIAO-CHUAN ｜ Ling English Interactive Learning System ｜ © All Rights Reserved</div>
+</main>
+</div>
+
+<script src="../js/app.js"></script>
+<script>
+// Sample vocab data for display
+const VOCAB_MAP={
+  vocab_0001:{word:'ability',chinese:'能力；才能',example:'She has the ability to solve problems.'},
+  vocab_0002:{word:'accept',chinese:'接受；承認',example:'He accepted the award with a smile.'},
+  vocab_0003:{word:'achieve',chinese:'達成；實現',example:'She worked hard to achieve her goals.'},
+  vocab_0004:{word:'active',chinese:'積極的；活躍的',example:'He leads an active lifestyle.'},
+  vocab_0005:{word:'activity',chinese:'活動；行動',example:'Swimming is a great outdoor activity.'},
+};
+const PHRASE_MAP={
+  p001:{word:'look after',chinese:'照顧；照料',example:'She looks after her brother.'},
+  p002:{word:'look for',chinese:'尋找',example:'I am looking for my keys.'},
+};
+
+let currentFavTab='all';
+
+document.addEventListener('DOMContentLoaded',()=>{App.init();renderFavorites();});
+
+function switchFavTab(el,tab){
+  document.querySelectorAll('.ftab').forEach(t=>t.classList.remove('active'));
+  el.classList.add('active');currentFavTab=tab;renderFavorites();
+}
+
+function renderFavorites(){
+  const favs=Storage.load('ling_favorites')||{};
+  const search=document.getElementById('search-input').value.toLowerCase();
+
+  document.getElementById('f-vocab').textContent=(favs.vocabulary||[]).length;
+  document.getElementById('f-phrase').textContent=(favs.phrases||[]).length;
+  document.getElementById('f-grammar').textContent=(favs.grammar||[]).length;
+  document.getElementById('f-reading').textContent=(favs.reading||[]).length;
+
+  let items=[];
+  const addItems=(ids,map,type)=>{
+    (ids||[]).forEach(id=>{
+      const d=map[id];
+      if(d)items.push({...d,id,type});
+    });
+  };
+
+  if(currentFavTab==='all'||currentFavTab==='vocabulary')addItems(favs.vocabulary,VOCAB_MAP,'單字');
+  if(currentFavTab==='all'||currentFavTab==='phrases')addItems(favs.phrases,PHRASE_MAP,'片語');
+
+  if(search)items=items.filter(i=>i.word?.toLowerCase().includes(search)||i.chinese?.includes(search));
+
+  const grid=document.getElementById('fav-grid');
+  if(!items.length){
+    grid.innerHTML='<div class="empty-state" style="grid-column:span 3"><div class="icon">⭐</div><p>還沒有收藏！在學習頁面點擊 ☆ 來收藏內容。</p></div>';
+    return;
+  }
+  grid.innerHTML=items.map(item=>`
+    <div class="fav-card">
+      <button class="fav-remove" onclick="removeFav('${item.id}','${item.type}')">✕</button>
+      <div class="fav-word">${item.word}</div>
+      <div class="fav-zh">${item.chinese}</div>
+      <div class="fav-example">${item.example||''}</div>
+      <span class="fav-type">${item.type}</span>
+    </div>`).join('');
+}
+
+function removeFav(id,type){
+  const favs=Storage.load('ling_favorites')||{};
+  const typeMap={單字:'vocabulary',片語:'phrases',文法:'grammar',閱讀:'reading'};
+  const key=typeMap[type];
+  if(key&&favs[key]){favs[key]=favs[key].filter(i=>i!==id);Storage.save('ling_favorites',favs);}
+  renderFavorites();
+}
+</script>
+</body>
+</html>

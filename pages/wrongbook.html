@@ -1,0 +1,153 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>錯題本 — LING</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="../css/main.css">
+<style>
+.wcontent{margin-left:var(--sidebar-w);flex:1;padding:28px}
+.wheader{margin-bottom:24px}
+.wheader h1{font-size:22px;font-weight:800;margin-bottom:4px}
+.wheader p{font-size:13px;color:var(--text-muted)}
+.wtabs{display:flex;gap:4px;background:var(--bg-card);border:1px solid var(--border);border-radius:var(--radius-xs);padding:4px;margin-bottom:20px;width:fit-content}
+.wtab{padding:7px 18px;border-radius:6px;font-size:13px;font-weight:500;cursor:pointer;color:var(--text-muted);transition:all var(--transition)}
+.wtab.active{background:linear-gradient(135deg,var(--purple),var(--purple-dark));color:white}
+.wstats{display:grid;grid-template-columns:repeat(4,1fr);gap:16px;margin-bottom:20px}
+.wstat{background:var(--bg-card);border:1px solid var(--border);border-radius:var(--radius-sm);padding:16px;text-align:center}
+.wstat .val{font-size:26px;font-weight:800;background:linear-gradient(135deg,#fff,var(--gold));-webkit-background-clip:text;-webkit-text-fill-color:transparent}
+.wstat .lbl{font-size:11px;color:var(--text-muted)}
+.wrong-list{display:flex;flex-direction:column;gap:10px}
+.wrong-item{background:var(--bg-card);border:1px solid var(--border);border-radius:var(--radius-sm);padding:16px;display:flex;align-items:center;gap:16px}
+.wi-type{width:60px;text-align:center;flex-shrink:0}
+.wi-type .type-badge{font-size:10px;font-weight:700;padding:3px 8px;border-radius:99px}
+.wi-word{flex:1}
+.wi-word .word{font-size:16px;font-weight:700;color:var(--gold)}
+.wi-word .zh{font-size:13px;color:var(--text-muted);margin-top:2px}
+.wi-risk{flex-shrink:0}
+.risk-high{color:var(--danger);font-size:12px;font-weight:600}
+.risk-mid{color:var(--warning);font-size:12px;font-weight:600}
+.risk-low{color:var(--success);font-size:12px;font-weight:600}
+.wi-count{flex-shrink:0;text-align:center}
+.wi-count .cnt{font-size:18px;font-weight:800;color:var(--danger)}
+.wi-count .lbl{font-size:10px;color:var(--text-muted)}
+.wi-btns{display:flex;gap:6px;flex-shrink:0}
+.wi-btn{padding:6px 12px;border-radius:var(--radius-xs);font-size:12px;font-weight:600;cursor:pointer;border:none;transition:all var(--transition)}
+.wi-btn-review{background:rgba(124,58,237,.2);color:#A78BFA;border:1px solid rgba(124,58,237,.3)}
+.wi-btn-remove{background:rgba(239,68,68,.1);color:var(--danger);border:1px solid rgba(239,68,68,.2)}
+.empty-state{text-align:center;padding:60px;color:var(--text-muted)}
+.empty-state .icon{font-size:48px;margin-bottom:12px}
+.special-btn{display:flex;align-items:center;gap:8px;padding:12px 20px;background:linear-gradient(135deg,rgba(124,58,237,.3),rgba(91,33,182,.2));border:1px solid rgba(124,58,237,.4);border-radius:var(--radius-xs);color:#C4B5FD;font-size:14px;font-weight:600;cursor:pointer;margin-bottom:20px;width:fit-content}
+</style>
+</head>
+<body>
+<div class="app-layout" style="display:flex">
+<aside class="sidebar1" id="sidebar1">
+  <button class="sidebar1-collapse-btn" id="sidebar-collapse">‹</button>
+  <div class="sidebar1-logo"><div class="logo-icon">🏆</div><div class="logo-text"><h2>LING</h2><p>English Interactive Learning System</p></div></div>
+  <nav class="sidebar1-nav">
+    <a class="nav-item" href="../index.html"><span class="nav-icon">🏠</span><span class="nav-label">首頁總覽</span></a>
+    <a class="nav-item" href="vocabulary.html"><span class="nav-icon">📖</span><span class="nav-label">單字學習</span></a>
+    <a class="nav-item" href="phrases.html"><span class="nav-icon">📝</span><span class="nav-label">片語學習</span></a>
+    <a class="nav-item" href="grammar.html"><span class="nav-icon">📚</span><span class="nav-label">文法學習</span></a>
+    <a class="nav-item" href="reading.html"><span class="nav-icon">📄</span><span class="nav-label">閱讀測驗</span></a>
+    <a class="nav-item active" href="wrongbook.html"><span class="nav-icon">❌</span><span class="nav-label">錯題本</span></a>
+    <a class="nav-item" href="favorite.html"><span class="nav-icon">⭐</span><span class="nav-label">我的收藏</span></a>
+    <a class="nav-item" href="journal.html"><span class="nav-icon">📅</span><span class="nav-label">學習日誌</span></a>
+    <a class="nav-item" href="game.html"><span class="nav-icon">🎮</span><span class="nav-label">遊戲中心</span></a>
+    <a class="nav-item" href="settings.html"><span class="nav-icon">⚙️</span><span class="nav-label">設定</span></a>
+  </nav>
+  <div class="sidebar1-profile">
+    <div class="profile-avatar profile-avatar-img">翎</div>
+    <div class="profile-info"><h4><span class="profile-name">翎庭</span> <span class="lv-badge">Lv.1</span></h4><p>LING Student</p></div>
+  </div>
+</aside>
+
+<main class="wcontent animate-fadeIn">
+  <div class="wheader">
+    <h1>❌ 錯題本</h1>
+    <p>自動收集你的錯誤，幫助你找出弱點、精準複習</p>
+  </div>
+
+  <div class="wtabs">
+    <div class="wtab active" onclick="switchCat(this,'all')">全部</div>
+    <div class="wtab" onclick="switchCat(this,'vocabulary')">單字</div>
+    <div class="wtab" onclick="switchCat(this,'phrase')">片語</div>
+    <div class="wtab" onclick="switchCat(this,'grammar')">文法</div>
+    <div class="wtab" onclick="switchCat(this,'reading')">閱讀</div>
+  </div>
+
+  <div class="wstats">
+    <div class="wstat"><div class="val" id="ws-total">0</div><div class="lbl">錯題總數</div></div>
+    <div class="wstat"><div class="val" id="ws-high" style="color:var(--danger)">0</div><div class="lbl">高風險題目</div></div>
+    <div class="wstat"><div class="val" id="ws-week">0</div><div class="lbl">本週新增</div></div>
+    <div class="wstat"><div class="val" id="ws-reviewed">0</div><div class="lbl">已複習</div></div>
+  </div>
+
+  <button class="special-btn" onclick="alert('⚔️ 錯題復仇戰即將登場！')">⚔️ 錯題復仇戰 — 只用最近的錯題挑戰！</button>
+
+  <div class="wrong-list" id="wrong-list"></div>
+
+  <div class="footer" style="margin-top:24px">Designed by CHIEN, HSIAO-CHUAN ｜ Ling English Interactive Learning System ｜ © All Rights Reserved</div>
+</main>
+</div>
+
+<script src="../js/app.js"></script>
+<script>
+let currentCat='all';
+const TYPE_LABELS={vocabulary:{label:'單字',color:'rgba(124,58,237,.2)',text:'#A78BFA'},phrase:{label:'片語',color:'rgba(246,196,83,.15)',text:'var(--gold)'},grammar:{label:'文法',color:'rgba(16,185,129,.15)',text:'var(--success)'},reading:{label:'閱讀',color:'rgba(59,130,246,.15)',text:'#93C5FD'}};
+
+document.addEventListener('DOMContentLoaded',()=>{App.init();renderWrongbook();});
+
+function switchCat(el,cat){
+  document.querySelectorAll('.wtab').forEach(t=>t.classList.remove('active'));
+  el.classList.add('active');currentCat=cat;renderWrongbook();
+}
+
+function renderWrongbook(){
+  let wb=Storage.load('ling_wrongbook')||[];
+  if(currentCat!=='all')wb=wb.filter(w=>w.type===currentCat);
+  wb.sort((a,b)=>b.wrongCount-a.wrongCount);
+
+  const high=wb.filter(w=>w.wrongCount>=4).length;
+  const weekAgo=new Date();weekAgo.setDate(weekAgo.getDate()-7);
+  const weekNew=wb.filter(w=>new Date(w.lastWrong||'2000-01-01')>=weekAgo).length;
+
+  document.getElementById('ws-total').textContent=wb.length;
+  document.getElementById('ws-high').textContent=high;
+  document.getElementById('ws-week').textContent=weekNew;
+  document.getElementById('ws-reviewed').textContent=0;
+
+  const list=document.getElementById('wrong-list');
+  if(!wb.length){list.innerHTML='<div class="empty-state"><div class="icon">🎉</div><p>這個分類目前沒有錯題！繼續保持！</p></div>';return;}
+
+  list.innerHTML=wb.map((w,i)=>{
+    const risk=w.wrongCount>=4?'high':w.wrongCount>=2?'mid':'low';
+    const riskLabel={high:'🔴 高風險',mid:'🟡 中風險',low:'🟢 低風險'}[risk];
+    const riskClass={high:'risk-high',mid:'risk-mid',low:'risk-low'}[risk];
+    const typeInfo=TYPE_LABELS[w.type]||TYPE_LABELS.vocabulary;
+    return `<div class="wrong-item">
+      <div class="wi-type"><span class="type-badge" style="background:${typeInfo.color};color:${typeInfo.text}">${typeInfo.label}</span></div>
+      <div class="wi-word"><div class="word">${w.word||w.id}</div><div class="zh">最後錯誤：${w.lastWrong||'─'}</div></div>
+      <div class="wi-risk"><span class="${riskClass}">${riskLabel}</span></div>
+      <div class="wi-count"><div class="cnt">${w.wrongCount}</div><div class="lbl">次錯誤</div></div>
+      <div class="wi-btns">
+        <button class="wi-btn wi-btn-review" onclick="reviewItem(${i})">複習</button>
+        <button class="wi-btn wi-btn-remove" onclick="removeItem('${w.id||w.word}')">移除</button>
+      </div>
+    </div>`;
+  }).join('');
+}
+
+function reviewItem(i){alert('複習功能整合中，敬請期待！');}
+function removeItem(id){
+  let wb=Storage.load('ling_wrongbook')||[];
+  wb=wb.filter(w=>(w.id||w.word)!==id);
+  Storage.save('ling_wrongbook',wb);
+  renderWrongbook();
+}
+</script>
+</body>
+</html>

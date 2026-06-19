@@ -1,0 +1,420 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>片語學習 — LING</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="../css/main.css">
+<style>
+.sidebar2{width:280px;min-height:100vh;background:rgba(10,8,20,.97);border-right:1px solid var(--border);position:fixed;left:var(--sidebar-w);top:0;bottom:0;z-index:90;overflow-y:auto;overflow-x:hidden;transition:width .3s ease}
+.sidebar2.collapsed{width:0;overflow:hidden;border-right:none}
+.sidebar2-open-btn{position:fixed;top:50%;left:var(--sidebar-w);transform:translateY(-50%);background:var(--purple);border:none;color:white;width:20px;height:48px;border-radius:0 8px 8px 0;cursor:pointer;font-size:14px;z-index:95;display:none;align-items:center;justify-content:center}
+.sidebar2-header{padding:16px 14px 12px;border-bottom:1px solid var(--border);position:sticky;top:0;background:rgba(10,8,20,.97);z-index:1;display:flex;align-items:flex-start;justify-content:space-between;white-space:nowrap}
+.sidebar2-header h2{font-size:15px;font-weight:700;display:flex;align-items:center;gap:8px;margin-bottom:3px}
+.sidebar2-header p{font-size:11px;color:var(--text-muted)}
+.sidebar2-collapse-btn{background:var(--purple);border:none;color:white;width:22px;height:22px;border-radius:50%;cursor:pointer;font-size:12px;display:flex;align-items:center;justify-content:center;flex-shrink:0;margin-top:2px}
+.level-list{padding:6px}
+.level-item{display:flex;align-items:center;gap:10px;padding:10px 12px;border-radius:var(--radius-xs);cursor:pointer;margin-bottom:2px;transition:all var(--transition);border:1px solid transparent}
+.level-item:hover{background:var(--bg-card)}
+.level-item.active{background:linear-gradient(135deg,rgba(124,58,237,.25),rgba(91,33,182,.15));border-color:rgba(124,58,237,.3)}
+.level-item.locked{opacity:.4;cursor:not-allowed}
+.level-item.done{border-color:rgba(16,185,129,.2)}
+.level-num{width:36px;height:36px;background:rgba(255,255,255,.05);border-radius:10px;display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:700;color:var(--text-muted);flex-shrink:0}
+.level-item.active .level-num{background:linear-gradient(135deg,var(--purple),var(--purple-dark));color:white}
+.level-item.done .level-num{background:rgba(16,185,129,.2);color:var(--success)}
+.level-info{flex:1}
+.level-info p{font-size:13px;font-weight:500}
+.level-info span{font-size:11px;color:var(--text-muted)}
+.phrase-content{margin-left:calc(var(--sidebar-w) + 280px);flex:1;padding:24px;min-height:100vh;transition:margin-left .3s ease;min-width:0}
+.phrase-content.expanded{margin-left:calc(var(--sidebar-w) + 24px)}
+.phrase-topbar{display:flex;align-items:center;justify-content:space-between;margin-bottom:20px}
+.phrase-topbar h1{font-size:20px;font-weight:700}
+.word-tabs{display:flex;gap:4px;background:var(--bg-card);border:1px solid var(--border);border-radius:var(--radius-xs);padding:4px;margin-bottom:16px;overflow-x:auto}
+.word-tab{padding:6px 14px;border-radius:6px;font-size:13px;font-weight:500;cursor:pointer;color:var(--text-muted);white-space:nowrap;transition:all var(--transition);flex-shrink:0}
+.word-tab.active{background:linear-gradient(135deg,var(--purple),var(--purple-dark));color:white}
+
+.phrase-card{background:var(--bg-card);border:1px solid var(--border);border-radius:var(--radius);padding:28px;margin-bottom:16px;display:grid;grid-template-columns:1fr 1fr;gap:28px}
+.phrase-main{}
+.phrase-title{font-size:42px;font-weight:900;background:linear-gradient(135deg,#fff 30%,var(--gold));-webkit-background-clip:text;-webkit-text-fill-color:transparent;line-height:1.1;margin-bottom:8px}
+.phrase-phonetic{font-size:15px;color:var(--text-muted);margin-bottom:10px;display:flex;align-items:center;gap:10px}
+.btn-audio{background:rgba(124,58,237,.2);border:1px solid rgba(124,58,237,.3);color:#A78BFA;padding:4px 10px;border-radius:99px;font-size:12px;cursor:pointer}
+.phrase-chinese{font-size:22px;font-weight:700;color:var(--text);margin-bottom:6px}
+.detail-label{font-size:11px;text-transform:uppercase;letter-spacing:.5px;color:var(--text-muted);margin-bottom:6px;margin-top:14px}
+.phrase-detail{font-size:14px;color:var(--text-sec);line-height:1.6}
+.example-box{background:rgba(124,58,237,.08);border:1px solid rgba(124,58,237,.15);border-radius:var(--radius-xs);padding:12px 14px;margin-top:8px}
+.example-box .en{font-size:14px;color:var(--text);line-height:1.5}
+.example-box .en em{color:var(--gold);font-style:normal;font-weight:700}
+.example-box .zh{font-size:12px;color:var(--text-muted);margin-top:4px}
+.similar-phrases{display:flex;flex-wrap:wrap;gap:8px;margin-top:8px}
+.similar-tag{padding:4px 12px;border-radius:99px;background:rgba(255,255,255,.06);border:1px solid var(--border);font-size:12px;color:var(--text-sec);cursor:pointer;transition:all var(--transition)}
+.similar-tag:hover{background:rgba(124,58,237,.2)}
+.mistake-box{background:rgba(239,68,68,.05);border:1px solid rgba(239,68,68,.15);border-radius:var(--radius-xs);padding:14px}
+.mistake-box h4{font-size:12px;font-weight:600;color:#FCA5A5;margin-bottom:10px}
+.mistake-wrong{font-size:13px;color:var(--danger);margin-bottom:4px}
+.mistake-correct{font-size:13px;color:var(--success)}
+.correct-box{background:rgba(16,185,129,.05);border:1px solid rgba(16,185,129,.15);border-radius:var(--radius-xs);padding:14px;margin-top:12px}
+.correct-box h4{font-size:12px;font-weight:600;color:var(--success);margin-bottom:8px}
+.correct-box .ex{font-size:13px;color:var(--text-sec)}
+.quick-tools{display:flex;gap:16px;align-items:center;margin-top:16px;padding-top:16px;border-top:1px solid var(--border)}
+.quick-tool{display:flex;flex-direction:column;align-items:center;gap:4px;cursor:pointer;color:var(--text-muted);transition:color var(--transition);font-size:11px}
+.quick-tool:hover{color:var(--text)}
+.quick-tool.fav{color:var(--gold)}
+.word-nav{display:flex;align-items:center;justify-content:space-between;gap:12px}
+.btn-nav{display:flex;align-items:center;gap:6px;padding:10px 20px;border-radius:var(--radius-xs);font-size:14px;font-weight:600;cursor:pointer;border:none;transition:all var(--transition)}
+.btn-prev{background:var(--bg-card);border:1px solid var(--border);color:var(--text-sec)}
+.btn-prev:hover{color:var(--text);background:var(--bg-card-hover)}
+.btn-next{background:linear-gradient(135deg,var(--purple),var(--purple-dark));color:white}
+.btn-quiz{background:linear-gradient(135deg,var(--gold),var(--gold-dark));color:#1a1a1a;font-weight:700;padding:10px 24px;border-radius:var(--radius-xs);border:none;cursor:pointer;font-size:14px}
+.level-footer{background:var(--bg-card);border:1px solid var(--border);border-radius:var(--radius-sm);padding:16px 20px;display:flex;align-items:center;justify-content:space-between;margin-top:16px}
+.level-footer-left p{font-size:13px;color:var(--text-sec)}
+.level-footer-right .pct{font-size:22px;font-weight:800;color:var(--gold)}
+.level-footer-right p{font-size:11px;color:var(--text-muted)}
+.total-bar{display:flex;gap:20px;align-items:center;padding:12px 20px;background:var(--bg-card);border:1px solid var(--border);border-radius:var(--radius-sm);margin-bottom:16px}
+.ts{text-align:center}.ts .val{font-size:20px;font-weight:800;color:var(--gold)}.ts .lbl{font-size:11px;color:var(--text-muted)}
+</style>
+</head>
+<body>
+<div class="app-layout" style="display:flex">
+<aside class="sidebar1" id="sidebar1">
+  <button class="sidebar1-collapse-btn" id="sidebar-collapse">‹</button>
+  <div class="sidebar1-logo"><div class="logo-icon">🏆</div><div class="logo-text"><h2>LING</h2><p>English Interactive Learning System</p></div></div>
+  <nav class="sidebar1-nav">
+    <a class="nav-item" href="../index.html"><span class="nav-icon">🏠</span><span class="nav-label">首頁總覽</span></a>
+    <a class="nav-item" href="vocabulary.html"><span class="nav-icon">📖</span><span class="nav-label">單字學習</span></a>
+    <a class="nav-item active" href="phrases.html"><span class="nav-icon">📝</span><span class="nav-label">片語學習</span></a>
+    <a class="nav-item" href="grammar.html"><span class="nav-icon">📚</span><span class="nav-label">文法學習</span></a>
+    <a class="nav-item" href="reading.html"><span class="nav-icon">📄</span><span class="nav-label">閱讀測驗</span></a>
+    <a class="nav-item" href="wrongbook.html"><span class="nav-icon">❌</span><span class="nav-label">錯題本</span></a>
+    <a class="nav-item" href="favorite.html"><span class="nav-icon">⭐</span><span class="nav-label">我的收藏</span></a>
+    <a class="nav-item" href="journal.html"><span class="nav-icon">📅</span><span class="nav-label">學習日誌</span></a>
+    <a class="nav-item" href="game.html"><span class="nav-icon">🎮</span><span class="nav-label">遊戲中心</span></a>
+    <a class="nav-item" href="settings.html"><span class="nav-icon">⚙️</span><span class="nav-label">設定</span></a>
+  </nav>
+  <div class="sidebar1-profile">
+    <div class="profile-avatar profile-avatar-img">翎</div>
+    <div class="profile-info"><h4><span class="profile-name">翎庭</span> <span class="lv-badge">Lv.1</span></h4><p>LING Student</p></div>
+  </div>
+</aside>
+
+<aside class="sidebar2" id="sidebar2">
+  <div class="sidebar2-header">
+    <div><h2>📝 片語學習</h2><p>掌握常用片語，提升你的表達力！</p></div>
+    <button class="sidebar2-collapse-btn" onclick="toggleSidebar2()" title="收合">‹</button>
+  </div>
+  <div class="level-list" id="level-list"></div>
+</aside>
+<button class="sidebar2-open-btn" id="sidebar2-open" onclick="toggleSidebar2()" title="展開">›</button>
+
+<main class="phrase-content animate-fadeIn">
+  <div class="phrase-topbar">
+    <h1>📝 片語學習 <span style="font-size:14px;color:var(--text-muted);font-weight:400">掌握常用片語，提升你的表達力！</span></h1>
+    <div class="streak-badge" style="background:rgba(239,68,68,.15);border:1px solid rgba(239,68,68,.3);padding:6px 14px;border-radius:99px;font-size:12px;font-weight:600;color:#FCA5A5;display:flex;align-items:center;gap:6px">🔥 連續學習 <span id="streak-count">0</span> 天</div>
+  </div>
+
+  <div class="total-bar">
+    <div class="ts"><div class="val" id="s-learned">0</div><div class="lbl">已學片語</div></div>
+    <div style="width:1px;height:30px;background:var(--border)"></div>
+    <div class="ts"><div class="val">300</div><div class="lbl">總片語數</div></div>
+    <div style="width:1px;height:30px;background:var(--border)"></div>
+    <div class="ts"><div class="val" id="s-acc">0%</div><div class="lbl">正確率</div></div>
+    <div style="flex:1"><div style="font-size:11px;color:var(--text-muted);margin-bottom:4px">總進度</div><div class="progress-bar" style="height:6px"><div class="progress-fill" id="s-bar" style="width:0%"></div></div></div>
+    <div class="ts"><div class="val" id="s-levels">0/60</div><div class="lbl">完成關卡</div></div>
+  </div>
+
+  <div class="word-tabs" id="word-tabs"></div>
+
+  <div class="phrase-card">
+    <div class="phrase-main">
+      <div class="phrase-title" id="p-phrase">look after</div>
+      <div class="phrase-phonetic"><span id="p-phonetic">/lɒk ˈæftər/</span><button class="btn-audio" onclick="speakPhrase()">🔊 發音</button></div>
+      <div class="phrase-chinese" id="p-chinese">照顧；照料</div>
+      <div class="detail-label">詳細解釋</div>
+      <div class="phrase-detail" id="p-detail">指照顧某人或某事物，使其處於良好狀態。常用於照顧家人、朋友或孩子。</div>
+      <div class="detail-label">例句</div>
+      <div class="example-box">
+        <div class="en" id="p-example">She <em>looks after</em> her younger brother every day.</div>
+        <div class="zh" id="p-example-zh">她每天照顧她的弟弟。</div>
+      </div>
+      <div class="detail-label">相似片語</div>
+      <div class="similar-phrases" id="similar-phrases">
+        <span class="similar-tag">take care of</span>
+        <span class="similar-tag">care for</span>
+        <span class="similar-tag">attend to</span>
+      </div>
+      <div class="quick-tools">
+        <div class="quick-tool" id="fav-btn" onclick="toggleFav()"><span class="icon">☆</span><span>收藏</span></div>
+        <div class="quick-tool" onclick="speakPhrase()"><span class="icon">🔊</span><span>發音</span></div>
+        <div class="quick-tool" onclick="addToWrong()"><span class="icon">📚</span><span>錯題本</span></div>
+        <div class="quick-tool"><span class="icon">📤</span><span>分享</span></div>
+      </div>
+    </div>
+
+    <div>
+      <div class="mistake-box">
+        <h4>⚠️ 常見錯誤</h4>
+        <div id="p-mistake-wrong" class="mistake-wrong">✗ look for（錯誤：尋找）</div>
+        <div id="p-mistake-correct" class="mistake-correct">✓ look after = 照顧（正確用法）</div>
+        <div style="margin-top:8px;font-size:12px;color:var(--text-muted)" id="p-mistake-note">注意：look after ≠ look for</div>
+      </div>
+      <div class="correct-box">
+        <h4>✅ 正確用法</h4>
+        <div class="ex" id="p-correct-ex">She looks after her younger brother.<br><span style="font-size:11px;color:var(--text-muted)">她照顧她的弟弟。</span></div>
+      </div>
+      <div style="margin-top:14px;display:grid;grid-template-columns:1fr 1fr;gap:8px">
+        <button class="btn btn-ghost" onclick="speakPhrase()" style="justify-content:center;font-size:12px">🔊 發音</button>
+        <button class="btn btn-ghost" onclick="toggleFav()" style="justify-content:center;font-size:12px">⭐ 收藏</button>
+        <button class="btn btn-ghost" style="justify-content:center;font-size:12px">📝 筆記</button>
+        <button class="btn btn-ghost" style="justify-content:center;font-size:12px">📤 分享</button>
+      </div>
+    </div>
+  </div>
+
+  <div class="word-nav">
+    <button class="btn-nav btn-prev" onclick="prevPhrase()">← 上一個</button>
+    <div style="font-size:13px;color:var(--text-muted)" id="p-counter">1 / 5</div>
+    <button class="btn-nav btn-next" onclick="nextPhrase()">下一個 →</button>
+    <button class="btn-quiz" onclick="startQuiz()">📝 開始測驗</button>
+  </div>
+
+  <div class="level-footer">
+    <div class="level-footer-left">
+      <p id="lf-title">Level 01 基礎片語 (1-5)</p>
+      <div class="progress-bar" style="width:200px;margin-top:6px"><div class="progress-fill" id="lf-bar" style="width:0%"></div></div>
+    </div>
+    <div class="level-footer-right">
+      <div class="pct" id="lf-pct">0%</div>
+      <p>本關正確率</p>
+      <button class="btn btn-gold" style="margin-top:8px;font-size:12px" onclick="unlockNext()">🔓 解鎖 Level 02</button>
+    </div>
+  </div>
+  <div class="footer" style="margin-top:20px">Designed by CHIEN, HSIAO-CHUAN ｜ Ling English Interactive Learning System ｜ © All Rights Reserved</div>
+</main>
+</div>
+
+<script src="../js/app.js"></script>
+<script>
+const PHRASES = {
+  1:[
+    {id:"p001",phrase:"look after",chinese:"照顧；照料",phonetic:"/lʊk ˈɑːftər/",detail:"指照顧某人或某事物，使其處於良好狀態。",example:"She looks after her younger brother every day.",exampleZh:"她每天照顧她的弟弟。",similar:["take care of","care for","attend to"],mistake:{wrong:"look for（錯誤：尋找）",correct:"look after = 照顧（正確）",note:"注意：look after ≠ look for"},correctEx:"She looks after her younger brother.<br><span style='font-size:11px;color:var(--text-muted)'>她照顧她的弟弟。</span>"},
+    {id:"p002",phrase:"look for",chinese:"尋找",phonetic:"/lʊk fɔːr/",detail:"指積極地尋找某人或某物。",example:"I am looking for my keys.",exampleZh:"我在找我的鑰匙。",similar:["search for","seek","find"],mistake:{wrong:"look after（錯誤：照顧）",correct:"look for = 尋找（正確）",note:"不要和 look after 混淆"},correctEx:"He is looking for a new job.<br><span style='font-size:11px;color:var(--text-muted)'>他在找新工作。</span>"},
+    {id:"p003",phrase:"look up",chinese:"查詢；仰望",phonetic:"/lʊk ʌp/",detail:"查詢資訊，或抬頭向上看。",example:"Look up the word in the dictionary.",exampleZh:"在字典裡查這個單字。",similar:["search","check","find out"],mistake:{wrong:"look up to（錯誤：尊敬）",correct:"look up = 查詢（正確）",note:"look up to 表示尊敬某人"},correctEx:"She looked up the answer online.<br><span style='font-size:11px;color:var(--text-muted)'>她在網上查了答案。</span>"},
+    {id:"p004",phrase:"take care of",chinese:"照顧；處理",phonetic:"/teɪk kɛr ɒv/",detail:"照顧某人，或處理某事。",example:"He takes care of his elderly parents.",exampleZh:"他照顧他年邁的父母。",similar:["look after","care for","handle"],mistake:{wrong:"take care for（錯誤介系詞）",correct:"take care of + N（正確）",note:"介系詞必須用 of"},correctEx:"She takes care of the children.<br><span style='font-size:11px;color:var(--text-muted)'>她照顧孩子們。</span>"},
+    {id:"p005",phrase:"be interested in",chinese:"對⋯感興趣",phonetic:"/biː ˈɪntrəstɪd ɪn/",detail:"表示對某事物有興趣。",example:"She is interested in learning English.",exampleZh:"她對學英語感興趣。",similar:["be fond of","enjoy","like"],mistake:{wrong:"be interested to（錯誤，to後接動詞）",correct:"be interested in + N/Ving（正確）",note:"in 後面接名詞或動名詞"},correctEx:"He is interested in music.<br><span style='font-size:11px;color:var(--text-muted)'>他對音樂感興趣。</span>"}
+  ],
+  2:[
+    {id:"p006",phrase:"give up",chinese:"放棄",phonetic:"/ɡɪv ʌp/",detail:"停止嘗試某件事，或放棄某個習慣。",example:"Don't give up on your dreams.",exampleZh:"不要放棄你的夢想。",similar:["quit","stop trying","surrender"],mistake:{wrong:"give up to（錯誤）",correct:"give up + N/Ving（正確）",note:"up 後直接接名詞或動名詞"},correctEx:"She gave up smoking last year.<br><span style='font-size:11px;color:var(--text-muted)'>她去年戒菸了。</span>"},
+    {id:"p007",phrase:"pick up",chinese:"撿起；學會；接人",phonetic:"/pɪk ʌp/",detail:"可指撿起物品、自然學會技能，或開車去接某人。",example:"She picked up Spanish very quickly.",exampleZh:"她很快就學會了西班牙語。",similar:["learn","collect","fetch"],mistake:{wrong:"pick up to（錯誤）",correct:"pick up = 學會 / 撿起（正確）",note:"意思多元，視語境判斷"},correctEx:"Can you pick me up at the airport?<br><span style='font-size:11px;color:var(--text-muted)'>你能去機場接我嗎？</span>"},
+    {id:"p008",phrase:"find out",chinese:"發現；查明",phonetic:"/faɪnd aʊt/",detail:"透過調查或偶然機會得知某事。",example:"We need to find out the truth.",exampleZh:"我們需要查明真相。",similar:["discover","learn","figure out"],mistake:{wrong:"find out to（錯誤）",correct:"find out + that/wh-子句（正確）",note:"後面常接 that 子句或疑問詞子句"},correctEx:"She found out that he had lied.<br><span style='font-size:11px;color:var(--text-muted)'>她發現他說謊了。</span>"},
+    {id:"p009",phrase:"put off",chinese:"延遲；推遲",phonetic:"/pʊt ɒf/",detail:"將某事推遲到稍後的時間。",example:"Don't put off your homework until tomorrow.",exampleZh:"不要把作業拖到明天。",similar:["delay","postpone","procrastinate"],mistake:{wrong:"put off to（多餘）",correct:"put off + N/Ving（正確）",note:"等同 postpone，後接名詞或動名詞"},correctEx:"They put off the meeting until next week.<br><span style='font-size:11px;color:var(--text-muted)'>他們把會議推遲到下週。</span>"},
+    {id:"p010",phrase:"run out of",chinese:"用完；耗盡",phonetic:"/rʌn aʊt ɒv/",detail:"某物的供應量已耗盡。",example:"We ran out of milk this morning.",exampleZh:"我們今天早上牛奶用完了。",similar:["use up","exhaust","deplete"],mistake:{wrong:"run out（少了 of）",correct:"run out of + N（正確）",note:"必須搭配 of，後接名詞"},correctEx:"The car ran out of gas on the highway.<br><span style='font-size:11px;color:var(--text-muted)'>車子在高速公路上沒油了。</span>"}
+  ],
+  3:[
+    {id:"p011",phrase:"turn on",chinese:"打開（電器）",phonetic:"/tɜːrn ɒn/",detail:"啟動電燈、電器或設備。",example:"Please turn on the lights.",exampleZh:"請把燈打開。",similar:["switch on","start","activate"],mistake:{wrong:"open（中式英文錯誤）",correct:"turn on = 開電器（正確）",note:"開電器用 turn on，不用 open"},correctEx:"He turned on the TV to watch the news.<br><span style='font-size:11px;color:var(--text-muted)'>他打開電視看新聞。</span>"},
+    {id:"p012",phrase:"turn off",chinese:"關掉（電器）",phonetic:"/tɜːrn ɒf/",detail:"關閉電燈、電器或設備。",example:"Remember to turn off the stove.",exampleZh:"記得把爐子關掉。",similar:["switch off","shut down","deactivate"],mistake:{wrong:"close（中式英文錯誤）",correct:"turn off = 關電器（正確）",note:"關電器用 turn off，不用 close"},correctEx:"She turned off her phone before the exam.<br><span style='font-size:11px;color:var(--text-muted)'>她在考試前關掉手機。</span>"},
+    {id:"p013",phrase:"come up with",chinese:"想出；提出（主意）",phonetic:"/kʌm ʌp wɪð/",detail:"想到或提出一個想法、計畫或解決方案。",example:"She came up with a brilliant idea.",exampleZh:"她想出了一個絕妙的主意。",similar:["think of","devise","suggest"],mistake:{wrong:"come up to（錯誤）",correct:"come up with + N（正確）",note:"固定搭配 with，不可替換"},correctEx:"Can you come up with a better plan?<br><span style='font-size:11px;color:var(--text-muted)'>你能想出更好的計畫嗎？</span>"},
+    {id:"p014",phrase:"put up with",chinese:"忍受；容忍",phonetic:"/pʊt ʌp wɪð/",detail:"接受或忍受令人不愉快的事或人。",example:"I can't put up with the noise anymore.",exampleZh:"我再也受不了這噪音了。",similar:["tolerate","bear","endure"],mistake:{wrong:"put up for（錯誤）",correct:"put up with + N（正確）",note:"固定三字片語，不可分開"},correctEx:"She put up with her difficult coworker.<br><span style='font-size:11px;color:var(--text-muted)'>她忍受了她難相處的同事。</span>"},
+    {id:"p015",phrase:"set up",chinese:"建立；設置",phonetic:"/sɛt ʌp/",detail:"建立組織、系統或設備，或安排某事。",example:"They set up a new company last year.",exampleZh:"他們去年成立了一家新公司。",similar:["establish","create","arrange"],mistake:{wrong:"set up for（通常不需要 for）",correct:"set up + N（正確）",note:"受詞可放中間：set it up"},correctEx:"She set up a meeting for Monday.<br><span style='font-size:11px;color:var(--text-muted)'>她安排了週一的會議。</span>"}
+  ],
+  4:[
+    {id:"p016",phrase:"go on",chinese:"繼續；發生",phonetic:"/ɡoʊ ɒn/",detail:"繼續進行某事，或詢問發生了什麼事。",example:"What's going on here?",exampleZh:"這裡發生了什麼事？",similar:["continue","happen","proceed"],mistake:{wrong:"go on with（有時多餘）",correct:"go on + Ving 或 go on = 發生（正確）",note:"go on doing = 繼續做；What's going on? = 發生什麼？"},correctEx:"Please go on with your presentation.<br><span style='font-size:11px;color:var(--text-muted)'>請繼續你的簡報。</span>"},
+    {id:"p017",phrase:"break down",chinese:"故障；崩潰",phonetic:"/breɪk daʊn/",detail:"指機器停止運作，或人情緒失控，也可指分析拆解。",example:"My car broke down on the way to work.",exampleZh:"我的車在上班途中拋錨了。",similar:["malfunction","collapse","fail"],mistake:{wrong:"break up（錯誤：分手）",correct:"break down = 故障 / 情緒崩潰（正確）",note:"break down ≠ break up（分手）"},correctEx:"She broke down in tears after hearing the news.<br><span style='font-size:11px;color:var(--text-muted)'>她聽到消息後哭崩了。</span>"},
+    {id:"p018",phrase:"get along with",chinese:"與⋯相處融洽",phonetic:"/ɡɛt əˈlɒŋ wɪð/",detail:"與某人有良好的關係，相處和諧。",example:"She gets along with all her classmates.",exampleZh:"她和所有同學相處得很好。",similar:["get on with","be friendly with","have a good relationship"],mistake:{wrong:"get along for（錯誤介系詞）",correct:"get along with + 人（正確）",note:"介系詞必須用 with"},correctEx:"He gets along well with his neighbors.<br><span style='font-size:11px;color:var(--text-muted)'>他和鄰居相處得很好。</span>"},
+    {id:"p019",phrase:"look forward to",chinese:"期待；盼望",phonetic:"/lʊk ˈfɔːrwərd tuː/",detail:"對即將到來的事情感到興奮和期盼。",example:"I'm looking forward to the holiday.",exampleZh:"我很期待這個假期。",similar:["anticipate","expect","await"],mistake:{wrong:"look forward to + V原形（錯誤）",correct:"look forward to + N/Ving（正確）",note:"to 是介系詞，後接名詞或動名詞"},correctEx:"She is looking forward to seeing you again.<br><span style='font-size:11px;color:var(--text-muted)'>她很期待再次見到你。</span>"},
+    {id:"p020",phrase:"end up",chinese:"最終；結果是",phonetic:"/ɛnd ʌp/",detail:"描述某事最終的結果，通常是意外的。",example:"He studied hard and ended up getting an A.",exampleZh:"他努力讀書，最後得了A。",similar:["wind up","turn out","eventually"],mistake:{wrong:"end up to（錯誤）",correct:"end up + Ving 或 end up + adj.（正確）",note:"後接動名詞或形容詞，不接不定詞"},correctEx:"They got lost and ended up in the wrong city.<br><span style='font-size:11px;color:var(--text-muted)'>他們迷路後，結果跑到錯誤的城市。</span>"}
+  ],
+  5:[
+    {id:"p021",phrase:"figure out",chinese:"弄清楚；解決",phonetic:"/ˈfɪɡjər aʊt/",detail:"透過思考理解某事或解決某個問題。",example:"I can't figure out how to use this app.",exampleZh:"我搞不清楚如何使用這個應用程式。",similar:["work out","understand","solve"],mistake:{wrong:"figure up（錯誤）",correct:"figure out + N/how to（正確）",note:"後常接 wh- 子句"},correctEx:"She finally figured out the answer.<br><span style='font-size:11px;color:var(--text-muted)'>她終於想出了答案。</span>"},
+    {id:"p022",phrase:"take off",chinese:"起飛；脫掉；成功",phonetic:"/teɪk ɒf/",detail:"可指飛機起飛、脫掉衣物，或事業突然成功。",example:"The plane took off at 8 a.m.",exampleZh:"飛機早上8點起飛。",similar:["launch","remove","soar"],mistake:{wrong:"take on（錯誤：承擔）",correct:"take off = 起飛 / 脫下 / 事業起飛（正確）",note:"take off ≠ take on（承擔責任）"},correctEx:"Her business really took off after the ad.<br><span style='font-size:11px;color:var(--text-muted)'>廣告後她的生意突然起飛了。</span>"},
+    {id:"p023",phrase:"carry out",chinese:"執行；實施",phonetic:"/ˈkæri aʊt/",detail:"執行計畫、命令或任務。",example:"We need to carry out the plan carefully.",exampleZh:"我們需要謹慎地執行這個計畫。",similar:["execute","implement","perform"],mistake:{wrong:"carry on（錯誤：繼續）",correct:"carry out = 執行（正確）",note:"carry out ≠ carry on（繼續）"},correctEx:"The soldiers carried out their orders.<br><span style='font-size:11px;color:var(--text-muted)'>士兵們執行了命令。</span>"},
+    {id:"p024",phrase:"keep up with",chinese:"跟上；保持同步",phonetic:"/kiːp ʌp wɪð/",detail:"跟上某人的速度或保持對某事的了解。",example:"It's hard to keep up with the latest news.",exampleZh:"很難跟上最新消息。",similar:["stay current","follow","catch up"],mistake:{wrong:"keep up to（錯誤）",correct:"keep up with + N（正確）",note:"固定搭配 with"},correctEx:"She works hard to keep up with her classmates.<br><span style='font-size:11px;color:var(--text-muted)'>她努力跟上同學的步伐。</span>"},
+    {id:"p025",phrase:"make up",chinese:"編造；和好；構成",phonetic:"/meɪk ʌp/",detail:"可指編造故事、與人和解，或組成某物。",example:"Don't make up excuses.",exampleZh:"不要編造藉口。",similar:["invent","reconcile","compose"],mistake:{wrong:"make up for（錯誤：彌補）",correct:"make up = 編造 / 和好（正確）",note:"make up for = 補償，意義不同"},correctEx:"They made up after the argument.<br><span style='font-size:11px;color:var(--text-muted)'>他們爭吵後和好了。</span>"}
+  ],
+  6:[
+    {id:"p026",phrase:"deal with",chinese:"處理；應對",phonetic:"/diːl wɪð/",detail:"處理問題、情況或人。",example:"She knows how to deal with stress.",exampleZh:"她知道如何應對壓力。",similar:["handle","cope with","manage"],mistake:{wrong:"deal to（錯誤）",correct:"deal with + N（正確）",note:"固定搭配 with"},correctEx:"He dealt with the complaint professionally.<br><span style='font-size:11px;color:var(--text-muted)'>他專業地處理了投訴。</span>"},
+    {id:"p027",phrase:"point out",chinese:"指出；提出",phonetic:"/pɔɪnt aʊt/",detail:"指出某個重要的事實或細節。",example:"She pointed out the mistakes in my essay.",exampleZh:"她指出了我文章中的錯誤。",similar:["indicate","highlight","note"],mistake:{wrong:"point to（意義略有不同）",correct:"point out + that/N（正確）",note:"point out 強調告訴別人某事"},correctEx:"He pointed out that the door was unlocked.<br><span style='font-size:11px;color:var(--text-muted)'>他指出門沒有上鎖。</span>"},
+    {id:"p028",phrase:"get used to",chinese:"習慣於",phonetic:"/ɡɛt juːst tuː/",detail:"逐漸習慣某事，使其感覺正常。",example:"She got used to waking up early.",exampleZh:"她習慣了早起。",similar:["be accustomed to","adapt to","adjust to"],mistake:{wrong:"get used to + V原形（錯誤）",correct:"get used to + N/Ving（正確）",note:"to 是介系詞，後接名詞或動名詞"},correctEx:"He got used to the cold weather.<br><span style='font-size:11px;color:var(--text-muted)'>他習慣了寒冷的天氣。</span>"},
+    {id:"p029",phrase:"bring up",chinese:"提出（話題）；撫養",phonetic:"/brɪŋ ʌp/",detail:"在對話中提出某個話題，或撫養孩子。",example:"She was brought up in Taipei.",exampleZh:"她在台北長大。",similar:["raise","mention","introduce"],mistake:{wrong:"bring on（錯誤：引起）",correct:"bring up = 撫養 / 提出話題（正確）",note:"bring on = 引起，意義不同"},correctEx:"He brought up an interesting point.<br><span style='font-size:11px;color:var(--text-muted)'>他提出了一個有趣的觀點。</span>"},
+    {id:"p030",phrase:"throw away",chinese:"丟棄；浪費",phonetic:"/θroʊ əˈweɪ/",detail:"丟棄不再需要的東西，或浪費機會。",example:"Don't throw away this opportunity.",exampleZh:"不要浪費這個機會。",similar:["discard","waste","dispose of"],mistake:{wrong:"throw out（意思相近但用法略有差異）",correct:"throw away + N（正確）",note:"throw away 也可說 throw out"},correctEx:"She threw away all the old magazines.<br><span style='font-size:11px;color:var(--text-muted)'>她把所有舊雜誌都丟了。</span>"}
+  ],
+  7:[
+    {id:"p031",phrase:"go through",chinese:"經歷；檢查",phonetic:"/ɡoʊ θruː/",detail:"經歷困難或艱辛，或仔細檢查某物。",example:"She went through a tough time last year.",exampleZh:"她去年經歷了一段艱難時期。",similar:["experience","examine","undergo"],mistake:{wrong:"go across（錯誤）",correct:"go through = 經歷 / 檢查（正確）",note:"go through = 穿越、查閱、經歷"},correctEx:"Let's go through the report one more time.<br><span style='font-size:11px;color:var(--text-muted)'>讓我們再看一遍報告。</span>"},
+    {id:"p032",phrase:"take part in",chinese:"參與；參加",phonetic:"/teɪk pɑːrt ɪn/",detail:"參與某個活動、計畫或事件。",example:"She took part in the singing contest.",exampleZh:"她參加了歌唱比賽。",similar:["participate in","join","be involved in"],mistake:{wrong:"take part of（錯誤介系詞）",correct:"take part in + N（正確）",note:"介系詞必須用 in"},correctEx:"He took part in the science project.<br><span style='font-size:11px;color:var(--text-muted)'>他參與了科學專題。</span>"},
+    {id:"p033",phrase:"pay attention to",chinese:"注意；留意",phonetic:"/peɪ əˈtɛnʃən tuː/",detail:"專注於某事或某人，仔細觀察。",example:"Please pay attention to the teacher.",exampleZh:"請注意聽老師說話。",similar:["focus on","concentrate on","notice"],mistake:{wrong:"pay attention for（錯誤介系詞）",correct:"pay attention to + N（正確）",note:"固定搭配 to"},correctEx:"You need to pay attention to the details.<br><span style='font-size:11px;color:var(--text-muted)'>你需要注意細節。</span>"},
+    {id:"p034",phrase:"make sense",chinese:"有道理；合理",phonetic:"/meɪk sɛns/",detail:"某事是合理的、可理解的，或具有邏輯性。",example:"Your explanation makes perfect sense.",exampleZh:"你的解釋完全合理。",similar:["be logical","be reasonable","be clear"],mistake:{wrong:"make senses（錯誤，sense 不加 s）",correct:"make sense（正確，sense 不加 s）",note:"sense 在此固定用單數"},correctEx:"It makes sense to save money while you're young.<br><span style='font-size:11px;color:var(--text-muted)'>年輕時存錢是有道理的。</span>"},
+    {id:"p035",phrase:"fall behind",chinese:"落後；拖欠",phonetic:"/fɔːl bɪˈhaɪnd/",detail:"在進度、工作或付款上落後於他人或預定計畫。",example:"He fell behind in his studies after being sick.",exampleZh:"生病後他的學習落後了。",similar:["lag behind","be behind","drop back"],mistake:{wrong:"fall back（意義不同：後退）",correct:"fall behind = 落後（正確）",note:"fall back ≠ fall behind"},correctEx:"She fell behind on her rent payments.<br><span style='font-size:11px;color:var(--text-muted)'>她在租金繳付上拖欠了。</span>"}
+  ],
+  8:[
+    {id:"p036",phrase:"stand out",chinese:"突出；顯眼",phonetic:"/stænd aʊt/",detail:"比其他人或事物更顯眼或更優秀。",example:"Her red dress really stands out.",exampleZh:"她的紅色洋裝真的很顯眼。",similar:["be noticeable","be prominent","shine"],mistake:{wrong:"stand up（錯誤：站起來）",correct:"stand out = 突出（正確）",note:"stand out ≠ stand up（站起來）"},correctEx:"She stood out from the crowd with her talent.<br><span style='font-size:11px;color:var(--text-muted)'>她以才能在人群中脫穎而出。</span>"},
+    {id:"p037",phrase:"work out",chinese:"解決；鍛鍊；算出",phonetic:"/wɜːrk aʊt/",detail:"可指解決問題、計算出答案，或進行身體鍛鍊。",example:"Things will work out in the end.",exampleZh:"事情最終會解決的。",similar:["exercise","solve","calculate"],mistake:{wrong:"work on（意義不同：努力做）",correct:"work out = 解決 / 鍛鍊（正確）",note:"work out ≠ work on（努力做某事）"},correctEx:"He works out at the gym every morning.<br><span style='font-size:11px;color:var(--text-muted)'>他每天早上去健身房鍛鍊。</span>"},
+    {id:"p038",phrase:"depend on",chinese:"依賴；取決於",phonetic:"/dɪˈpɛnd ɒn/",detail:"依賴某人或某事，或根據情況而定。",example:"It depends on the weather.",exampleZh:"這取決於天氣。",similar:["rely on","count on","hinge on"],mistake:{wrong:"depend at / depend in（錯誤）",correct:"depend on + N（正確）",note:"固定搭配 on"},correctEx:"Success depends on hard work and determination.<br><span style='font-size:11px;color:var(--text-muted)'>成功取決於努力和決心。</span>"},
+    {id:"p039",phrase:"give back",chinese:"歸還；回報",phonetic:"/ɡɪv bæk/",detail:"把借來的東西歸還，或回饋社會。",example:"Please give back the book you borrowed.",exampleZh:"請把你借的書還回來。",similar:["return","repay","restore"],mistake:{wrong:"give it back for（多餘）",correct:"give back + N 或 give + N + back（正確）",note:"受詞可放中間或後面"},correctEx:"She gave back all the money she owed.<br><span style='font-size:11px;color:var(--text-muted)'>她還清了她欠的所有錢。</span>"},
+    {id:"p040",phrase:"slow down",chinese:"減速；放慢",phonetic:"/sloʊ daʊn/",detail:"降低速度，或讓事情進行得更緩慢。",example:"Slow down! You're driving too fast.",exampleZh:"慢下來！你開得太快了。",similar:["decelerate","reduce speed","ease up"],mistake:{wrong:"slow up（較少用）",correct:"slow down = 減速（正確）",note:"slow up 較老式，slow down 更常用"},correctEx:"The doctor told him to slow down at work.<br><span style='font-size:11px;color:var(--text-muted)'>醫生告訴他工作要放慢步調。</span>"}
+  ],
+  9:[
+    {id:"p041",phrase:"make a difference",chinese:"有所不同；發揮作用",phonetic:"/meɪk ə ˈdɪfərəns/",detail:"產生重要的影響或改變某種情況。",example:"Your vote can make a difference.",exampleZh:"你的一票可以發揮作用。",similar:["have an impact","matter","change things"],mistake:{wrong:"make the difference（有時正確，但意義稍有不同）",correct:"make a difference = 發揮作用（正確）",note:"make a difference 指有正面影響"},correctEx:"Volunteering can make a big difference.<br><span style='font-size:11px;color:var(--text-muted)'>做志工可以產生很大的影響。</span>"},
+    {id:"p042",phrase:"apply for",chinese:"申請",phonetic:"/əˈplaɪ fɔːr/",detail:"正式申請工作、學校入學、獎學金等。",example:"She applied for a scholarship.",exampleZh:"她申請了獎學金。",similar:["request","submit an application","register for"],mistake:{wrong:"apply to（有時正確，但對象不同）",correct:"apply for + 職位/獎項（正確）",note:"apply for = 申請某職位；apply to = 申請某機構"},correctEx:"He applied for a job at the hospital.<br><span style='font-size:11px;color:var(--text-muted)'>他申請了醫院的工作。</span>"},
+    {id:"p043",phrase:"take advantage of",chinese:"利用；佔便宜",phonetic:"/teɪk ədˈvɑːntɪdʒ ɒv/",detail:"利用機會或資源，有時含有不公平地佔便宜的意思。",example:"Take advantage of every learning opportunity.",exampleZh:"好好利用每一個學習機會。",similar:["make use of","exploit","utilize"],mistake:{wrong:"take advantage to（錯誤介系詞）",correct:"take advantage of + N（正確）",note:"固定搭配 of"},correctEx:"She took advantage of the sale to buy books.<br><span style='font-size:11px;color:var(--text-muted)'>她趁特賣買了書。</span>"},
+    {id:"p044",phrase:"be aware of",chinese:"意識到；知道",phonetic:"/biː əˈwɛr ɒv/",detail:"知道或意識到某事的存在或重要性。",example:"Are you aware of the risks?",exampleZh:"你意識到風險了嗎？",similar:["know about","realize","notice"],mistake:{wrong:"be aware for（錯誤介系詞）",correct:"be aware of + N（正確）",note:"固定搭配 of"},correctEx:"Students should be aware of plagiarism rules.<br><span style='font-size:11px;color:var(--text-muted)'>學生應該了解抄襲規定。</span>"},
+    {id:"p045",phrase:"get rid of",chinese:"擺脫；去除",phonetic:"/ɡɛt rɪd ɒv/",detail:"消除不需要或令人不舒服的東西。",example:"She tried to get rid of bad habits.",exampleZh:"她試圖擺脫壞習慣。",similar:["remove","eliminate","throw away"],mistake:{wrong:"get rid from（錯誤介系詞）",correct:"get rid of + N（正確）",note:"固定搭配 of"},correctEx:"He got rid of all the clutter in his room.<br><span style='font-size:11px;color:var(--text-muted)'>他清除了房間裡所有的雜物。</span>"}
+  ],
+  10:[
+    {id:"p046",phrase:"give in",chinese:"讓步；屈服",phonetic:"/ɡɪv ɪn/",detail:"停止抵抗並接受某人的要求或某種情況。",example:"Don't give in to peer pressure.",exampleZh:"不要向同儕壓力屈服。",similar:["yield","surrender","back down"],mistake:{wrong:"give up（意義不同：放棄）",correct:"give in = 讓步（正確）",note:"give in = 屈服於外部壓力；give up = 停止嘗試"},correctEx:"After hours of negotiation, he finally gave in.<br><span style='font-size:11px;color:var(--text-muted)'>幾小時談判後，他終於讓步了。</span>"},
+    {id:"p047",phrase:"catch up",chinese:"趕上；補上",phonetic:"/kætʃ ʌp/",detail:"趕上先前落後的進度，或與久未聯絡的人敘舊。",example:"I need to catch up on my sleep.",exampleZh:"我需要補眠。",similar:["keep up","reach","make up"],mistake:{wrong:"catch on（錯誤：流行/理解）",correct:"catch up (on) + N（正確）",note:"catch on = 流行或理解，意義不同"},correctEx:"Let's catch up over coffee sometime.<br><span style='font-size:11px;color:var(--text-muted)'>找時間喝咖啡敘舊吧。</span>"},
+    {id:"p048",phrase:"hand in",chinese:"繳交；提交",phonetic:"/hænd ɪn/",detail:"將作業、報告或文件交給負責人。",example:"Please hand in your homework by Friday.",exampleZh:"請在週五前繳交作業。",similar:["submit","turn in","give in"],mistake:{wrong:"hand on（錯誤）",correct:"hand in = 繳交（正確）",note:"hand in = turn in = submit"},correctEx:"She handed in her assignment early.<br><span style='font-size:11px;color:var(--text-muted)'>她提前繳交了作業。</span>"},
+    {id:"p049",phrase:"show off",chinese:"炫耀",phonetic:"/ʃoʊ ɒf/",detail:"為了引起他人的注意或讚美而展示技能或財物。",example:"Stop showing off your new phone.",exampleZh:"別再炫耀你的新手機了。",similar:["brag","boast","flaunt"],mistake:{wrong:"show up（意義不同：出現）",correct:"show off = 炫耀（正確）",note:"show off ≠ show up（出現、讓人難堪）"},correctEx:"He showed off his dance moves at the party.<br><span style='font-size:11px;color:var(--text-muted)'>他在派對上炫耀他的舞步。</span>"},
+    {id:"p050",phrase:"drop out",chinese:"退出；輟學",phonetic:"/drɒp aʊt/",detail:"從學校、比賽或組織中退出。",example:"He dropped out of high school at 16.",exampleZh:"他16歲時從高中輟學。",similar:["quit","withdraw","leave"],mistake:{wrong:"drop off（錯誤：下車/送達）",correct:"drop out of + N（正確）",note:"drop off = 送到某處/瞌睡，意義不同"},correctEx:"She dropped out of the race due to injury.<br><span style='font-size:11px;color:var(--text-muted)'>她因傷退出了比賽。</span>"}
+  ],
+  11:[
+    {id:"p051",phrase:"look into",chinese:"調查；深入研究",phonetic:"/lʊk ˈɪntuː/",detail:"仔細調查或研究某個問題或情況。",example:"The police are looking into the case.",exampleZh:"警方正在調查此案。",similar:["investigate","examine","research"],mistake:{wrong:"look in（少 to，意義不同）",correct:"look into + N（正確）",note:"into 不可省略"},correctEx:"We'll look into the matter right away.<br><span style='font-size:11px;color:var(--text-muted)'>我們會立刻調查這件事。</span>"},
+    {id:"p052",phrase:"take over",chinese:"接管；接手",phonetic:"/teɪk ˈoʊvər/",detail:"接管某人的職責或控制某個組織、公司。",example:"She took over the company after her father retired.",exampleZh:"父親退休後她接管了公司。",similar:["take charge","take control","assume control"],mistake:{wrong:"take on（意義不同：承擔工作）",correct:"take over = 接管（正確）",note:"take on = 承擔工作；take over = 接管控制"},correctEx:"A new manager took over the department.<br><span style='font-size:11px;color:var(--text-muted)'>新經理接管了部門。</span>"},
+    {id:"p053",phrase:"come across",chinese:"偶然遇到；給人印象",phonetic:"/kʌm əˈkrɒs/",detail:"偶然發現或遇見某物/某人，或給人某種印象。",example:"I came across an old photo.",exampleZh:"我偶然發現了一張舊照片。",similar:["encounter","stumble upon","find"],mistake:{wrong:"come over（意義不同：過來）",correct:"come across = 偶然遇到（正確）",note:"come over = 過來拜訪，意義不同"},correctEx:"She came across as very confident.<br><span style='font-size:11px;color:var(--text-muted)'>她給人一種非常自信的印象。</span>"},
+    {id:"p054",phrase:"cut down on",chinese:"減少（消費或使用）",phonetic:"/kʌt daʊn ɒn/",detail:"減少某種習慣性行為的頻率或量。",example:"He's trying to cut down on sugar.",exampleZh:"他正在努力減少糖的攝取。",similar:["reduce","decrease","limit"],mistake:{wrong:"cut down to（錯誤用法）",correct:"cut down on + N（正確）",note:"固定搭配 on"},correctEx:"She cut down on coffee to sleep better.<br><span style='font-size:11px;color:var(--text-muted)'>她減少喝咖啡以改善睡眠。</span>"},
+    {id:"p055",phrase:"put forward",chinese:"提出（建議/計畫）",phonetic:"/pʊt ˈfɔːrwərd/",detail:"正式提出一個想法、提案或論點供他人考慮。",example:"She put forward a new proposal.",exampleZh:"她提出了一個新提案。",similar:["propose","suggest","present"],mistake:{wrong:"put forth（意思相近但較正式）",correct:"put forward + N（正確）",note:"put forward 較口語，put forth 較文學性"},correctEx:"He put forward a plan to reduce costs.<br><span style='font-size:11px;color:var(--text-muted)'>他提出了降低成本的計畫。</span>"}
+  ],
+  12:[
+    {id:"p056",phrase:"bring about",chinese:"引起；導致",phonetic:"/brɪŋ əˈbaʊt/",detail:"引起或造成某個變化或結果。",example:"Technology has brought about many changes.",exampleZh:"科技帶來了許多變化。",similar:["cause","lead to","result in"],mistake:{wrong:"bring out（意義不同：推出）",correct:"bring about = 引起（正確）",note:"bring out = 推出新產品，意義不同"},correctEx:"The new law brought about social changes.<br><span style='font-size:11px;color:var(--text-muted)'>新法律帶來了社會變化。</span>"},
+    {id:"p057",phrase:"keep in mind",chinese:"記住；牢記",phonetic:"/kiːp ɪn maɪnd/",detail:"記住某件重要的事情，以免遺忘。",example:"Keep in mind that the exam is tomorrow.",exampleZh:"記住考試是明天。",similar:["remember","bear in mind","not forget"],mistake:{wrong:"keep on mind（錯誤介系詞）",correct:"keep in mind（正確）",note:"固定搭配 in，不可替換"},correctEx:"Keep in mind that rules may change.<br><span style='font-size:11px;color:var(--text-muted)'>記住規則可能會改變。</span>"},
+    {id:"p058",phrase:"live up to",chinese:"達到（期望）；不辜負",phonetic:"/lɪv ʌp tuː/",detail:"達到預期的標準或履行承諾。",example:"He didn't live up to our expectations.",exampleZh:"他沒有達到我們的期望。",similar:["meet","fulfill","satisfy"],mistake:{wrong:"live up for（錯誤）",correct:"live up to + N（正確）",note:"固定搭配 to"},correctEx:"She lived up to her reputation as a top student.<br><span style='font-size:11px;color:var(--text-muted)'>她不負頂尖學生的聲譽。</span>"},
+    {id:"p059",phrase:"fill in",chinese:"填寫；代替",phonetic:"/fɪl ɪn/",detail:"填寫表格空白處，或暫時代替某人的職位。",example:"Please fill in this form.",exampleZh:"請填寫這份表格。",similar:["complete","substitute","cover"],mistake:{wrong:"fill up（錯誤：填滿容器）",correct:"fill in = 填寫 / 代班（正確）",note:"fill up = 把容器加滿，意義不同"},correctEx:"Can you fill in for me while I'm away?<br><span style='font-size:11px;color:var(--text-muted)'>我不在時你能代替我嗎？</span>"},
+    {id:"p060",phrase:"go off",chinese:"（鬧鐘）響；爆炸；腐壞",phonetic:"/ɡoʊ ɒf/",detail:"指鬧鐘或警報響起，炸彈爆炸，或食物變壞。",example:"My alarm went off at 7 a.m.",exampleZh:"我的鬧鐘早上7點響了。",similar:["ring","explode","spoil"],mistake:{wrong:"go out（意義不同：熄滅/外出）",correct:"go off = 響起 / 爆炸 / 腐壞（正確）",note:"go off ≠ go out（燈熄了/外出）"},correctEx:"The milk went off because it wasn't refrigerated.<br><span style='font-size:11px;color:var(--text-muted)'>牛奶因為沒有冷藏而壞掉了。</span>"}
+  ],
+  13:[
+    {id:"p061",phrase:"account for",chinese:"解釋；占（比例）",phonetic:"/əˈkaʊnt fɔːr/",detail:"解釋某事的原因，或佔總量的某個比例。",example:"How do you account for the missing money?",exampleZh:"你如何解釋那筆失蹤的錢？",similar:["explain","make up","represent"],mistake:{wrong:"account to（錯誤）",correct:"account for = 解釋 / 佔（正確）",note:"固定搭配 for"},correctEx:"Students account for half of the population here.<br><span style='font-size:11px;color:var(--text-muted)'>學生佔這裡人口的一半。</span>"},
+    {id:"p062",phrase:"call off",chinese:"取消",phonetic:"/kɔːl ɒf/",detail:"取消已計畫的活動或事件。",example:"They called off the game due to rain.",exampleZh:"他們因為下雨取消了比賽。",similar:["cancel","abandon","cancel out"],mistake:{wrong:"call out（意義不同：呼叫/指責）",correct:"call off = 取消（正確）",note:"call out = 呼叫或公開批評，意義不同"},correctEx:"The concert was called off at the last minute.<br><span style='font-size:11px;color:var(--text-muted)'>音樂會在最後一刻被取消了。</span>"},
+    {id:"p063",phrase:"set aside",chinese:"撥出；擱置",phonetic:"/sɛt əˈsaɪd/",detail:"為特定目的保留時間或金錢，或暫時忽略某事。",example:"Set aside some time for exercise.",exampleZh:"撥出一些時間運動。",similar:["reserve","save","put aside"],mistake:{wrong:"set apart（意義類似但略有不同）",correct:"set aside + N（正確）",note:"set apart 強調區分；set aside 強調保留"},correctEx:"She set aside money each month for savings.<br><span style='font-size:11px;color:var(--text-muted)'>她每月撥出一些錢存起來。</span>"},
+    {id:"p064",phrase:"run into",chinese:"偶然遇見；撞上",phonetic:"/rʌn ˈɪntuː/",detail:"意外地遇見某人，或遇到問題/困難。",example:"I ran into my old teacher at the market.",exampleZh:"我在市場偶遇了我的老師。",similar:["bump into","encounter","meet by chance"],mistake:{wrong:"run to（錯誤）",correct:"run into + 人/問題（正確）",note:"也可說 bump into（更口語）"},correctEx:"We ran into some problems with the project.<br><span style='font-size:11px;color:var(--text-muted)'>我們在這個專題上碰到了一些問題。</span>"},
+    {id:"p065",phrase:"come to",chinese:"達到；甦醒；合計",phonetic:"/kʌm tuː/",detail:"達到某個金額、結論或狀態，或從昏迷中清醒。",example:"The total comes to $500.",exampleZh:"總計是500美元。",similar:["amount to","total","regain consciousness"],mistake:{wrong:"come up to（意義不同：走近）",correct:"come to + 數字/結論（正確）",note:"come up to = 走向某人，come to = 合計/甦醒"},correctEx:"She came to in the hospital after the accident.<br><span style='font-size:11px;color:var(--text-muted)'>意外後她在醫院中清醒過來。</span>"}
+  ],
+  14:[
+    {id:"p066",phrase:"go against",chinese:"違反；反對",phonetic:"/ɡoʊ əˈɡɛnst/",detail:"違背規則、原則或某人的意願。",example:"This goes against the school rules.",exampleZh:"這違反了學校規定。",similar:["violate","oppose","contradict"],mistake:{wrong:"go for（意義相反：支持）",correct:"go against = 違反 / 反對（正確）",note:"go for = 支持，go against = 反對"},correctEx:"His actions went against his own values.<br><span style='font-size:11px;color:var(--text-muted)'>他的行為違背了他自己的價值觀。</span>"},
+    {id:"p067",phrase:"hold on",chinese:"等一下；堅持",phonetic:"/hoʊld ɒn/",detail:"讓人等候，或在困難情況下堅持下去。",example:"Hold on, I'll be right back.",exampleZh:"等一下，我馬上回來。",similar:["wait","persist","hang on"],mistake:{wrong:"hold up（意義不同：延遲/搶劫）",correct:"hold on = 等待 / 堅持（正確）",note:"hold up = 耽誤或搶劫，意義不同"},correctEx:"Hold on to your dreams even when it's hard.<br><span style='font-size:11px;color:var(--text-muted)'>即使困難，也要堅持你的夢想。</span>"},
+    {id:"p068",phrase:"draw attention to",chinese:"引起對⋯的注意",phonetic:"/drɔː əˈtɛnʃən tuː/",detail:"使人注意到某個重要的事情或問題。",example:"She drew attention to the environmental issue.",exampleZh:"她引起了大家對環境問題的關注。",similar:["highlight","point out","bring to light"],mistake:{wrong:"draw attention for（錯誤）",correct:"draw attention to + N（正確）",note:"固定搭配 to"},correctEx:"The report drew attention to health risks.<br><span style='font-size:11px;color:var(--text-muted)'>報告引起了對健康風險的關注。</span>"},
+    {id:"p069",phrase:"turn out",chinese:"結果是；出現",phonetic:"/tɜːrn aʊt/",detail:"最終的結果是某樣，或大批人出席某活動。",example:"It turned out to be a great day.",exampleZh:"結果是個美好的一天。",similar:["end up","prove","result"],mistake:{wrong:"turn up（意義不同：出現/調大音量）",correct:"turn out = 結果是（正確）",note:"turn up = 調高音量 / 意外出現"},correctEx:"Thousands turned out for the concert.<br><span style='font-size:11px;color:var(--text-muted)'>數千人出席了音樂會。</span>"},
+    {id:"p070",phrase:"mix up",chinese:"混淆；搞混",phonetic:"/mɪks ʌp/",detail:"把兩件事或兩個人搞混，或弄亂某物。",example:"I often mix up these two words.",exampleZh:"我常常搞混這兩個字。",similar:["confuse","muddle","jumble"],mistake:{wrong:"mix together（較不精確）",correct:"mix up = 搞混（正確）",note:"mix up 強調錯誤的混淆"},correctEx:"She mixed up the twins' names again.<br><span style='font-size:11px;color:var(--text-muted)'>她又把那對雙胞胎的名字搞混了。</span>"}
+  ],
+  15:[
+    {id:"p071",phrase:"take in",chinese:"接收（資訊）；欺騙；縮短",phonetic:"/teɪk ɪn/",detail:"吸收資訊、欺騙某人，或將衣物改小。",example:"There was so much information to take in.",exampleZh:"有太多資訊要消化了。",similar:["absorb","deceive","understand"],mistake:{wrong:"take in with（多餘）",correct:"take in = 消化吸收 / 被欺騙（正確）",note:"be taken in = 被騙"},correctEx:"He was taken in by the scam.<br><span style='font-size:11px;color:var(--text-muted)'>他被騙局騙了。</span>"},
+    {id:"p072",phrase:"wear out",chinese:"磨損；精疲力竭",phonetic:"/wɛr aʊt/",detail:"使物品因使用過度而損壞，或使人極度疲憊。",example:"The long hike wore me out.",exampleZh:"長途健行讓我筋疲力盡。",similar:["exhaust","tire out","use up"],mistake:{wrong:"wear down（類似但意指逐漸磨損）",correct:"wear out = 磨損 / 精疲力竭（正確）",note:"wear down 也可用，但 wear out 更口語"},correctEx:"These shoes are completely worn out.<br><span style='font-size:11px;color:var(--text-muted)'>這雙鞋完全磨壞了。</span>"},
+    {id:"p073",phrase:"stick to",chinese:"堅持；遵守",phonetic:"/stɪk tuː/",detail:"堅持計畫、規則或習慣，不輕易改變。",example:"Stick to your study schedule.",exampleZh:"堅持你的讀書計畫。",similar:["adhere to","keep to","follow"],mistake:{wrong:"stick with（意思相近，但 stick with 更口語）",correct:"stick to + N（正確）",note:"stick to 更正式；stick with 更口語"},correctEx:"She stuck to her diet even at parties.<br><span style='font-size:11px;color:var(--text-muted)'>即使在派對上她也堅持飲食控制。</span>"},
+    {id:"p074",phrase:"back up",chinese:"備份；支持；倒車",phonetic:"/bæk ʌp/",detail:"備份資料、支持某人的說法，或將車倒退。",example:"Always back up your files.",exampleZh:"務必備份你的檔案。",similar:["support","reverse","save"],mistake:{wrong:"back out（意義不同：退出）",correct:"back up = 備份 / 支持（正確）",note:"back out = 退出協議，意義不同"},correctEx:"He backed up his friend's story.<br><span style='font-size:11px;color:var(--text-muted)'>他支持了朋友的說法。</span>"},
+    {id:"p075",phrase:"go over",chinese:"複習；查看",phonetic:"/ɡoʊ ˈoʊvər/",detail:"仔細檢查或複習某事。",example:"Let's go over the notes before the exam.",exampleZh:"考試前我們來複習一下筆記。",similar:["review","check","revise"],mistake:{wrong:"go through（意思相近，但 go over 更強調反覆查看）",correct:"go over + N（正確）",note:"go over 強調仔細重看；go through 強調逐一過"},correctEx:"She went over her presentation slides.<br><span style='font-size:11px;color:var(--text-muted)'>她複習了她的簡報投影片。</span>"}
+  ],
+  16:[
+    {id:"p076",phrase:"rule out",chinese:"排除；否決",phonetic:"/ruːl aʊt/",detail:"排除某種可能性或選項。",example:"We can't rule out the possibility.",exampleZh:"我們不能排除這種可能性。",similar:["exclude","eliminate","dismiss"],mistake:{wrong:"rule off（錯誤）",correct:"rule out = 排除（正確）",note:"常用於否定：can't rule out = 不能排除"},correctEx:"The doctor ruled out a serious illness.<br><span style='font-size:11px;color:var(--text-muted)'>醫生排除了嚴重疾病的可能。</span>"},
+    {id:"p077",phrase:"get over",chinese:"克服；從⋯中恢復",phonetic:"/ɡɛt ˈoʊvər/",detail:"從疾病、失望或失戀中恢復過來。",example:"It took her a long time to get over the breakup.",exampleZh:"她花了很長時間才從分手中走出來。",similar:["recover from","overcome","move on"],mistake:{wrong:"get over with（不同意思：盡快結束）",correct:"get over + N（正確）",note:"get over with = 盡快完成（略帶不情願）"},correctEx:"He finally got over his fear of flying.<br><span style='font-size:11px;color:var(--text-muted)'>他終於克服了對搭飛機的恐懼。</span>"},
+    {id:"p078",phrase:"stand by",chinese:"支持；待命；旁觀",phonetic:"/stænd baɪ/",detail:"支持某人，或保持準備狀態，也可指袖手旁觀。",example:"I'll always stand by you.",exampleZh:"我永遠支持你。",similar:["support","wait","be ready"],mistake:{wrong:"stand for（意義不同：代表）",correct:"stand by + 人/N（正確）",note:"stand for = 代表；stand by = 支持/待命"},correctEx:"Emergency crews stood by in case of flooding.<br><span style='font-size:11px;color:var(--text-muted)'>緊急人員待命以防洪水。</span>"},
+    {id:"p079",phrase:"carry on",chinese:"繼續進行",phonetic:"/ˈkæri ɒn/",detail:"不停頓地繼續做某事。",example:"Please carry on with your work.",exampleZh:"請繼續你的工作。",similar:["continue","go on","proceed"],mistake:{wrong:"carry out（意義不同：執行）",correct:"carry on + Ving / carry on with + N（正確）",note:"carry out = 執行特定任務；carry on = 繼續"},correctEx:"Despite the rain, they carried on with the picnic.<br><span style='font-size:11px;color:var(--text-muted)'>儘管下雨，他們仍繼續野餐。</span>"},
+    {id:"p080",phrase:"let down",chinese:"使失望；放下",phonetic:"/lɛt daʊn/",detail:"讓依賴或相信你的人感到失望。",example:"Don't let your parents down.",exampleZh:"不要讓父母失望。",similar:["disappoint","fail","discourage"],mistake:{wrong:"let go（意義不同：放開）",correct:"let + 人 + down（正確）",note:"受詞放中間：let sb down"},correctEx:"She felt let down by her teammates.<br><span style='font-size:11px;color:var(--text-muted)'>她因隊友而感到失望。</span>"}
+  ],
+  17:[
+    {id:"p081",phrase:"narrow down",chinese:"縮小（範圍）",phonetic:"/ˈnæroʊ daʊn/",detail:"從眾多選項中減少到少數幾個。",example:"We narrowed down the list to three candidates.",exampleZh:"我們把名單縮小到三個候選人。",similar:["limit","reduce","shortlist"],mistake:{wrong:"narrow up（錯誤）",correct:"narrow down + N（正確）",note:"只能用 down，不可用 up"},correctEx:"Please narrow down your essay topic.<br><span style='font-size:11px;color:var(--text-muted)'>請縮小你的作文題目範圍。</span>"},
+    {id:"p082",phrase:"step up",chinese:"加強；站出來",phonetic:"/stɛp ʌp/",detail:"增加努力程度，或在需要時自願承擔責任。",example:"We need to step up our efforts.",exampleZh:"我們需要加強努力。",similar:["increase","intensify","take charge"],mistake:{wrong:"step on（意義不同：踩上去）",correct:"step up = 加強 / 站出來（正確）",note:"step on = 踩，step up = 提升行動力"},correctEx:"She stepped up when the team needed a leader.<br><span style='font-size:11px;color:var(--text-muted)'>當團隊需要領導者時她站了出來。</span>"},
+    {id:"p083",phrase:"refer to",chinese:"提到；查閱；稱為",phonetic:"/rɪˈfɜːr tuː/",detail:"提及某人或某事，或查閱資料，也可指稱謂。",example:"Please refer to the chart on page 5.",exampleZh:"請參考第5頁的圖表。",similar:["mention","consult","cite"],mistake:{wrong:"refer for（錯誤）",correct:"refer to + N（正確）",note:"固定搭配 to"},correctEx:"He referred to the dictionary for help.<br><span style='font-size:11px;color:var(--text-muted)'>他查字典尋求幫助。</span>"},
+    {id:"p084",phrase:"come down with",chinese:"患上（疾病）",phonetic:"/kʌm daʊn wɪð/",detail:"開始生病，通常是輕微的疾病。",example:"She came down with a cold.",exampleZh:"她感冒了。",similar:["develop","catch","get"],mistake:{wrong:"come down to（意義不同：歸結於）",correct:"come down with + 疾病（正確）",note:"come down to = 歸結到某點，意義不同"},correctEx:"He came down with the flu last winter.<br><span style='font-size:11px;color:var(--text-muted)'>他去年冬天患了流感。</span>"},
+    {id:"p085",phrase:"lay off",chinese:"解雇；停止",phonetic:"/leɪ ɒf/",detail:"因業務縮減而裁員，也可非正式地表示停止做某事。",example:"The company laid off 200 workers.",exampleZh:"公司裁了200名員工。",similar:["fire","dismiss","stop"],mistake:{wrong:"lay out（意義不同：規劃/展示）",correct:"lay off = 裁員 / 停止（正確）",note:"lay out = 展示或規劃，意義不同"},correctEx:"Lay off the junk food for a while.<br><span style='font-size:11px;color:var(--text-muted)'>暫時別吃垃圾食品了。</span>"}
+  ],
+  18:[
+    {id:"p086",phrase:"bring out",chinese:"帶出；激發；推出",phonetic:"/brɪŋ aʊt/",detail:"展現某人的特質、激發潛能，或推出新產品。",example:"Music brings out the best in her.",exampleZh:"音樂激發了她最好的一面。",similar:["reveal","launch","inspire"],mistake:{wrong:"bring about（意義不同：引起）",correct:"bring out = 激發 / 推出（正確）",note:"bring about = 引起變化；bring out = 激發/推出"},correctEx:"The new product was brought out in March.<br><span style='font-size:11px;color:var(--text-muted)'>新產品在三月推出。</span>"},
+    {id:"p087",phrase:"keep track of",chinese:"追蹤；記錄",phonetic:"/kiːp træk ɒv/",detail:"保持對某事的記錄或了解最新狀況。",example:"I use an app to keep track of my expenses.",exampleZh:"我用應用程式追蹤我的支出。",similar:["monitor","record","follow"],mistake:{wrong:"keep track for（錯誤）",correct:"keep track of + N（正確）",note:"固定搭配 of"},correctEx:"She keeps track of her students' progress.<br><span style='font-size:11px;color:var(--text-muted)'>她追蹤學生的進度。</span>"},
+    {id:"p088",phrase:"blow up",chinese:"爆炸；發脾氣；放大",phonetic:"/bloʊ ʌp/",detail:"爆炸、突然憤怒，或將影像放大。",example:"He blew up when he heard the news.",exampleZh:"聽到消息後他大發脾氣。",similar:["explode","lose temper","enlarge"],mistake:{wrong:"blow off（意義不同：逃避）",correct:"blow up = 爆炸 / 發脾氣（正確）",note:"blow off = 逃課/逃避，意義不同"},correctEx:"Can you blow up this photo?<br><span style='font-size:11px;color:var(--text-muted)'>你能把這張照片放大嗎？</span>"},
+    {id:"p089",phrase:"sum up",chinese:"總結；歸納",phonetic:"/sʌm ʌp/",detail:"用簡短的方式概括重要的要點。",example:"Let me sum up the main ideas.",exampleZh:"讓我來總結主要觀點。",similar:["summarize","conclude","recap"],mistake:{wrong:"sum out（錯誤）",correct:"sum up + N 或 sum N up（正確）",note:"受詞可放中間：sum it up"},correctEx:"She summed up the report in two minutes.<br><span style='font-size:11px;color:var(--text-muted)'>她用兩分鐘總結了報告。</span>"},
+    {id:"p090",phrase:"run over",chinese:"撞倒；超時；快速瀏覽",phonetic:"/rʌn ˈoʊvər/",detail:"車輛輾過某人，或超過預定的時間/數量，也指快速複習。",example:"We're running over the time limit.",exampleZh:"我們超過時間限制了。",similar:["exceed","review","drive over"],mistake:{wrong:"run through（意義不同：快速看完）",correct:"run over = 撞倒 / 超時 / 快速複習（正確）",note:"run through 也可表示快速看完，意義接近"},correctEx:"Let's quickly run over the key points.<br><span style='font-size:11px;color:var(--text-muted)'>讓我們快速過一遍重點。</span>"}
+  ],
+  19:[
+    {id:"p091",phrase:"fall for",chinese:"愛上；上當",phonetic:"/fɔːl fɔːr/",detail:"愛上某人，或受騙上當。",example:"She fell for his charm.",exampleZh:"她被他的魅力迷住了。",similar:["fall in love with","be deceived","be tricked"],mistake:{wrong:"fall to（錯誤）",correct:"fall for + 人/N（正確）",note:"fall for sb = 愛上；fall for sth = 上當"},correctEx:"He fell for the trick and lost his money.<br><span style='font-size:11px;color:var(--text-muted)'>他上了騙局的當，損失了錢。</span>"},
+    {id:"p092",phrase:"make for",chinese:"前往；有助於",phonetic:"/meɪk fɔːr/",detail:"朝某個方向移動，或有助於產生某種結果。",example:"Good nutrition makes for better health.",exampleZh:"良好的營養有助於更好的健康。",similar:["head for","contribute to","lead to"],mistake:{wrong:"make to（錯誤）",correct:"make for + N（正確）",note:"make for 表示促進或朝向"},correctEx:"They made for the exit when the alarm rang.<br><span style='font-size:11px;color:var(--text-muted)'>警報響起時他們朝出口走去。</span>"},
+    {id:"p093",phrase:"hold back",chinese:"阻止；壓制；保留",phonetic:"/hoʊld bæk/",detail:"阻止某人前進，壓制情感，或保留資訊。",example:"Don't hold back your true feelings.",exampleZh:"不要壓抑你的真實感受。",similar:["restrain","suppress","withhold"],mistake:{wrong:"hold off（意義不同：延遲）",correct:"hold back + N/人（正確）",note:"hold off = 延遲；hold back = 阻止/壓制"},correctEx:"She held back her tears during the speech.<br><span style='font-size:11px;color:var(--text-muted)'>她在演講期間忍住了眼淚。</span>"},
+    {id:"p094",phrase:"break through",chinese:"突破；克服",phonetic:"/breɪk θruː/",detail:"克服障礙，或在某個領域取得重大突破。",example:"Scientists broke through with a new discovery.",exampleZh:"科學家取得了新的突破性發現。",similar:["overcome","achieve","penetrate"],mistake:{wrong:"break into（意義不同：闖入）",correct:"break through = 突破（正確）",note:"break into = 闖入，意義不同"},correctEx:"She broke through the language barrier.<br><span style='font-size:11px;color:var(--text-muted)'>她突破了語言障礙。</span>"},
+    {id:"p095",phrase:"pass on",chinese:"傳遞；去世；拒絕",phonetic:"/pæs ɒn/",detail:"將資訊或物品傳給他人，委婉表示去世，或禮貌拒絕。",example:"Please pass on my regards to her.",exampleZh:"請代我向她問好。",similar:["transmit","decline","die"],mistake:{wrong:"pass out（意義不同：昏倒/分發）",correct:"pass on + N 或 pass N on（正確）",note:"pass out = 昏倒 / 分發，意義不同"},correctEx:"He passed on his knowledge to younger doctors.<br><span style='font-size:11px;color:var(--text-muted)'>他把知識傳授給年輕醫生。</span>"}
+  ],
+  20:[
+    {id:"p096",phrase:"give way to",chinese:"讓步於；被⋯取代",phonetic:"/ɡɪv weɪ tuː/",detail:"讓路給某人，或被更新的事物所取代。",example:"Paper maps are giving way to GPS.",exampleZh:"紙本地圖正在被GPS取代。",similar:["yield to","be replaced by","make room for"],mistake:{wrong:"give way for（錯誤介系詞）",correct:"give way to + N（正確）",note:"固定搭配 to"},correctEx:"Her fear gave way to excitement.<br><span style='font-size:11px;color:var(--text-muted)'>她的恐懼漸漸被興奮所取代。</span>"},
+    {id:"p097",phrase:"take on",chinese:"承擔；雇用；迎戰",phonetic:"/teɪk ɒn/",detail:"接受責任或挑戰，雇用新員工，或與更強者競爭。",example:"She took on too many responsibilities.",exampleZh:"她承擔了太多責任。",similar:["accept","hire","compete against"],mistake:{wrong:"take over（意義不同：接管）",correct:"take on + N（正確）",note:"take on = 承擔/挑戰；take over = 接管控制"},correctEx:"The company took on ten new employees.<br><span style='font-size:11px;color:var(--text-muted)'>公司雇用了十名新員工。</span>"},
+    {id:"p098",phrase:"lean on",chinese:"依賴；倚靠",phonetic:"/liːn ɒn/",detail:"在情感上依賴某人的支持，或物理上倚靠某物。",example:"You can lean on me whenever you need help.",exampleZh:"你需要幫助時可以依賴我。",similar:["rely on","depend on","count on"],mistake:{wrong:"lean to（錯誤）",correct:"lean on + 人/N（正確）",note:"情感上的依靠用 lean on"},correctEx:"She leaned on her friends during hard times.<br><span style='font-size:11px;color:var(--text-muted)'>困難時期她依賴朋友的支持。</span>"},
+    {id:"p099",phrase:"see through",chinese:"看穿；堅持完成",phonetic:"/siː θruː/",detail:"識破謊言或欺騙，或堅持把某事進行到底。",example:"She saw through his lies immediately.",exampleZh:"她立刻看穿了他的謊言。",similar:["expose","complete","detect"],mistake:{wrong:"look through（意義不同：翻閱）",correct:"see through = 看穿 / 堅持到底（正確）",note:"look through = 快速翻閱，意義不同"},correctEx:"I'll see this project through to the end.<br><span style='font-size:11px;color:var(--text-muted)'>我會堅持把這個專題做到最後。</span>"},
+    {id:"p100",phrase:"live on",chinese:"靠⋯維生；延續",phonetic:"/lɪv ɒn/",detail:"靠某種食物或收入維持生活，或記憶/精神的延續。",example:"She lives on a small pension.",exampleZh:"她靠微薄的退休金生活。",similar:["survive on","exist on","continue"],mistake:{wrong:"live in（意義不同：住在）",correct:"live on + N（正確）",note:"live in = 住在某地；live on = 靠⋯維生"},correctEx:"His legacy lives on through his work.<br><span style='font-size:11px;color:var(--text-muted)'>他的遺產透過他的作品延續下去。</span>"}
+  ]
+}
+};
+
+let currentLevel=1, currentIdx=0;
+let favorites = Storage.load('ling_favorites')?.phrases || [];
+
+document.addEventListener('DOMContentLoaded',()=>{
+  App.init();
+  renderLevelList();
+  loadLevel(1);
+});
+
+function renderLevelList(){
+  const lp = Storage.load('ling_phrase_progress')?.levelProgress || {};
+  const list = document.getElementById('level-list');
+  list.innerHTML='';
+  for(let i=1;i<=60;i++){
+    const done = lp[i]?.done;
+    const locked = i>1 && !lp[i-1]?.done;
+    const active = i===currentLevel;
+    const el=document.createElement('div');
+    el.className=`level-item ${active?'active':''} ${done?'done':''} ${locked?'locked':''}`;
+    el.innerHTML=`<div class="level-num">${i<10?'0'+i:i}</div><div class="level-info"><p>基礎片語 ${i}</p><span>${(i-1)*5+1}–${i*5}</span></div><span style="font-size:11px">${done?'✓':locked?'🔒':''}</span>`;
+    if(!locked) el.onclick=()=>loadLevel(i);
+    list.appendChild(el);
+  }
+}
+
+function loadLevel(lvl){
+  currentLevel=lvl; currentIdx=0;
+  renderLevelList();
+  const phrases=PHRASES[lvl];
+  if(!phrases){document.getElementById('p-phrase').textContent='（此關卡資料載入中）';return;}
+  renderTabs(phrases);
+  renderPhrase(phrases[0]);
+}
+
+function renderTabs(phrases){
+  const tabs=document.getElementById('word-tabs');
+  tabs.innerHTML=phrases.map((p,i)=>`<div class="word-tab ${i===0?'active':''}" onclick="jumpTo(${i})">${p.phrase}</div>`).join('');
+}
+
+function renderPhrase(p){
+  if(!p)return;
+  document.getElementById('p-phrase').textContent=p.phrase;
+  document.getElementById('p-phonetic').textContent=p.phonetic;
+  document.getElementById('p-chinese').textContent=p.chinese;
+  document.getElementById('p-detail').textContent=p.detail;
+  document.getElementById('p-example').innerHTML=p.example.replace(new RegExp(p.phrase,'gi'),`<em>${p.phrase}</em>`);
+  document.getElementById('p-example-zh').textContent=p.exampleZh;
+  document.getElementById('similar-phrases').innerHTML=(p.similar||[]).map(s=>`<span class="similar-tag">${s}</span>`).join('');
+  document.getElementById('p-mistake-wrong').textContent='✗ '+p.mistake.wrong;
+  document.getElementById('p-mistake-correct').textContent='✓ '+p.mistake.correct;
+  document.getElementById('p-mistake-note').textContent=p.mistake.note;
+  document.getElementById('p-correct-ex').innerHTML=p.correctEx;
+  document.getElementById('p-counter').textContent=`${currentIdx+1} / ${PHRASES[currentLevel]?.length||5}`;
+  document.querySelectorAll('.word-tab').forEach((t,i)=>t.classList.toggle('active',i===currentIdx));
+  const isFav=favorites.includes(p.id);
+  const fb=document.getElementById('fav-btn');
+  fb.querySelector('.icon').textContent=isFav?'★':'☆';
+  fb.classList.toggle('fav',isFav);
+}
+
+function jumpTo(i){currentIdx=i;renderPhrase(PHRASES[currentLevel][i]);}
+function prevPhrase(){if(currentIdx>0){currentIdx--;renderPhrase(PHRASES[currentLevel][currentIdx]);}}
+function nextPhrase(){const ps=PHRASES[currentLevel];if(ps&&currentIdx<ps.length-1){currentIdx++;renderPhrase(ps[currentIdx]);}}
+function speakPhrase(){if('speechSynthesis' in window){const u=new SpeechSynthesisUtterance(document.getElementById('p-phrase').textContent);u.lang='en-US';u.rate=0.9;speechSynthesis.speak(u);}}
+function toggleFav(){const ps=PHRASES[currentLevel];if(!ps)return;const p=ps[currentIdx];const idx=favorites.indexOf(p.id);if(idx===-1)favorites.push(p.id);else favorites.splice(idx,1);const fd=Storage.load('ling_favorites')||{};fd.phrases=favorites;Storage.save('ling_favorites',fd);renderPhrase(p);}
+function addToWrong(){alert('已加入錯題本！');}
+function startQuiz(){alert('片語測驗功能整合中，敬請期待！');}
+function unlockNext(){const vp=Storage.load('ling_phrase_progress')||{};if(!vp.levelProgress)vp.levelProgress={};vp.levelProgress[currentLevel]={done:true,pct:100};Storage.save('ling_phrase_progress',vp);if(currentLevel<60)loadLevel(currentLevel+1);}
+function toggleSidebar2(){
+  const sb=document.getElementById('sidebar2');
+  const content=document.querySelector('.phrase-content');
+  const openBtn=document.getElementById('sidebar2-open');
+  const collapsed=sb.classList.toggle('collapsed');
+  content.classList.toggle('expanded',collapsed);
+  openBtn.style.display=collapsed?'flex':'none';
+}
+</script>
+</body>
+</html>

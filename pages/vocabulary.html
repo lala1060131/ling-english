@@ -1,0 +1,1013 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>單字學習 — LING</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="../css/main.css">
+<style>
+/* ===== VOCAB PAGE ===== */
+.vocab-layout {
+  display: flex;
+  min-height: 100vh;
+}
+
+/* Sidebar 2 - Level List */
+.sidebar2 {
+  width: 280px;
+  min-height: 100vh;
+  background: rgba(10,8,20,0.97);
+  border-right: 1px solid var(--border);
+  display: flex;
+  flex-direction: column;
+  position: fixed;
+  left: var(--sidebar-w);
+  top: 0; bottom: 0;
+  z-index: 90;
+  overflow-y: auto;
+  overflow-x: hidden;
+  transition: width 0.3s ease;
+}
+.sidebar2.collapsed {
+  width: 0;
+  overflow: hidden;
+  border-right: none;
+}
+.sidebar2-open-btn {
+  position: fixed;
+  top: 50%;
+  left: var(--sidebar-w);
+  transform: translateY(-50%);
+  background: var(--purple);
+  border: none;
+  color: white;
+  width: 20px; height: 48px;
+  border-radius: 0 8px 8px 0;
+  cursor: pointer;
+  font-size: 14px;
+  z-index: 95;
+  display: none;
+  align-items: center;
+  justify-content: center;
+  transition: left 0.3s ease;
+}
+
+.sidebar2-header {
+  padding: 16px 14px 12px;
+  border-bottom: 1px solid var(--border);
+  position: sticky; top: 0;
+  background: rgba(10,8,20,0.97);
+  z-index: 1;
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  white-space: nowrap;
+}
+.sidebar2-header h2 {
+  font-size: 15px; font-weight: 700;
+  display: flex; align-items: center; gap: 8px;
+  margin-bottom: 3px;
+}
+.sidebar2-header p { font-size: 11px; color: var(--text-muted); }
+.sidebar2-collapse-btn {
+  background: var(--purple);
+  border: none;
+  color: white;
+  width: 22px; height: 22px;
+  border-radius: 50%;
+  cursor: pointer;
+  font-size: 12px;
+  display: flex; align-items: center; justify-content: center;
+  flex-shrink: 0;
+  margin-top: 2px;
+}
+
+.sidebar2-filter {
+  padding: 10px 12px;
+  border-bottom: 1px solid var(--border);
+}
+.filter-select {
+  width: 100%;
+  background: var(--bg-card);
+  border: 1px solid var(--border);
+  color: var(--text);
+  padding: 7px 10px;
+  border-radius: var(--radius-xs);
+  font-size: 12px;
+  cursor: pointer;
+}
+
+.level-list { padding: 6px; }
+.level-item {
+  display: flex; align-items: center; gap: 10px;
+  padding: 10px 12px;
+  border-radius: var(--radius-xs);
+  cursor: pointer;
+  margin-bottom: 2px;
+  transition: all var(--transition);
+  border: 1px solid transparent;
+}
+.level-item:hover { background: var(--bg-card); }
+.level-item.active {
+  background: linear-gradient(135deg, rgba(124,58,237,0.25), rgba(91,33,182,0.15));
+  border-color: rgba(124,58,237,0.3);
+}
+.level-item.locked { opacity: 0.4; cursor: not-allowed; }
+
+.level-num {
+  width: 36px; height: 36px;
+  background: rgba(255,255,255,0.05);
+  border-radius: 10px;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 12px; font-weight: 700; color: var(--text-muted);
+  flex-shrink: 0;
+}
+.level-item.active .level-num {
+  background: linear-gradient(135deg, var(--purple), var(--purple-dark));
+  color: white;
+}
+.level-item.done .level-num { background: rgba(16,185,129,0.2); color: var(--success); }
+
+.level-info { flex: 1; }
+.level-info p { font-size: 13px; font-weight: 500; }
+.level-info span { font-size: 11px; color: var(--text-muted); }
+.level-progress-bar {
+  height: 3px; background: rgba(255,255,255,0.08);
+  border-radius: 99px; margin-top: 4px; overflow: hidden;
+}
+.level-progress-fill {
+  height: 100%;
+  background: linear-gradient(90deg, var(--purple), var(--gold));
+}
+.level-status { font-size: 11px; flex-shrink: 0; }
+
+/* ===== VOCAB CONTENT ===== */
+.vocab-content {
+  margin-left: calc(var(--sidebar-w) + 280px);
+  flex: 1;
+  padding: 24px;
+  min-height: 100vh;
+  transition: margin-left 0.3s ease;
+  min-width: 0;
+}
+.vocab-content.expanded {
+  margin-left: calc(var(--sidebar-w) + 24px);
+}
+
+.vocab-topbar {
+  display: flex; align-items: center; justify-content: space-between;
+  margin-bottom: 20px;
+}
+.vocab-topbar h1 {
+  font-size: 20px; font-weight: 700;
+  display: flex; align-items: center; gap: 8px;
+}
+.vocab-topbar p { font-size: 12px; color: var(--text-muted); margin-top: 2px; }
+
+/* Word Card Tabs */
+.word-tabs {
+  display: flex; gap: 4px;
+  background: var(--bg-card);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-xs);
+  padding: 4px;
+  margin-bottom: 16px;
+  overflow-x: auto;
+}
+.word-tab {
+  padding: 6px 14px;
+  border-radius: 6px;
+  font-size: 13px; font-weight: 500;
+  cursor: pointer;
+  color: var(--text-muted);
+  white-space: nowrap;
+  transition: all var(--transition);
+  flex-shrink: 0;
+}
+.word-tab.active {
+  background: linear-gradient(135deg, var(--purple), var(--purple-dark));
+  color: white;
+}
+
+/* Main Word Card */
+.word-card {
+  background: var(--bg-card);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: 28px;
+  margin-bottom: 16px;
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 28px;
+  backdrop-filter: blur(20px);
+}
+
+.word-main { }
+.word-main .word-title {
+  font-size: 48px; font-weight: 900;
+  background: linear-gradient(135deg, #fff 30%, var(--gold));
+  -webkit-background-clip: text; -webkit-text-fill-color: transparent;
+  line-height: 1; margin-bottom: 8px;
+}
+.word-phonetic {
+  font-size: 16px; color: var(--text-muted);
+  margin-bottom: 12px;
+  display: flex; align-items: center; gap: 10px;
+}
+.btn-audio {
+  background: rgba(124,58,237,0.2);
+  border: 1px solid rgba(124,58,237,0.3);
+  color: #A78BFA;
+  padding: 4px 10px; border-radius: 99px;
+  font-size: 12px; cursor: pointer;
+  transition: all var(--transition);
+}
+.btn-audio:hover { background: rgba(124,58,237,0.4); }
+
+.word-chinese {
+  font-size: 22px; font-weight: 700; color: var(--text);
+  margin-bottom: 6px;
+}
+.word-detail-label {
+  font-size: 11px; text-transform: uppercase; letter-spacing: 0.5px;
+  color: var(--text-muted); margin-bottom: 6px; margin-top: 14px;
+}
+.word-explanation {
+  font-size: 14px; color: var(--text-sec); line-height: 1.6;
+}
+.word-example-box {
+  background: rgba(124,58,237,0.08);
+  border: 1px solid rgba(124,58,237,0.15);
+  border-radius: var(--radius-xs);
+  padding: 12px 14px;
+  margin-top: 8px;
+}
+.word-example-box .en {
+  font-size: 14px; color: var(--text);
+  line-height: 1.5;
+}
+.word-example-box .en em { color: var(--gold); font-style: normal; font-weight: 700; }
+.word-example-box .zh {
+  font-size: 12px; color: var(--text-muted);
+  margin-top: 4px;
+}
+
+.word-right { }
+.word-brain-img {
+  width: 100%; max-width: 200px;
+  aspect-ratio: 1;
+  border-radius: var(--radius-sm);
+  object-fit: cover;
+  margin: 0 auto 16px;
+  display: block;
+}
+.word-brain-placeholder {
+  width: 160px; height: 160px;
+  border-radius: var(--radius-sm);
+  background: linear-gradient(135deg, rgba(124,58,237,0.3), rgba(91,33,182,0.1));
+  border: 1px solid rgba(124,58,237,0.2);
+  display: flex; align-items: center; justify-content: center;
+  font-size: 60px;
+  margin: 0 auto 16px;
+}
+
+/* Common Mistakes */
+.mistakes-box {
+  background: rgba(239,68,68,0.05);
+  border: 1px solid rgba(239,68,68,0.15);
+  border-radius: var(--radius-xs);
+  padding: 14px;
+}
+.mistakes-box h4 {
+  font-size: 12px; font-weight: 600; color: #FCA5A5;
+  margin-bottom: 10px;
+  display: flex; align-items: center; gap: 6px;
+}
+.mistake-item { margin-bottom: 8px; }
+.mistake-wrong { font-size: 13px; color: var(--danger); margin-bottom: 2px; }
+.mistake-wrong span { font-size: 11px; color: var(--text-muted); margin-left: 4px; }
+.mistake-correct { font-size: 13px; color: var(--success); }
+
+/* Synonyms */
+.synonyms-row {
+  display: flex; flex-wrap: wrap; gap: 8px; margin-top: 8px;
+}
+.synonym-tag {
+  padding: 4px 12px; border-radius: 99px;
+  background: rgba(255,255,255,0.06);
+  border: 1px solid var(--border);
+  font-size: 12px; color: var(--text-sec);
+  cursor: pointer;
+  transition: all var(--transition);
+}
+.synonym-tag:hover { background: rgba(124,58,237,0.2); border-color: rgba(124,58,237,0.4); color: var(--text); }
+
+/* Quick Tools */
+.quick-tools {
+  display: flex; gap: 16px; align-items: center;
+  margin-top: 16px;
+  padding-top: 16px;
+  border-top: 1px solid var(--border);
+}
+.quick-tool {
+  display: flex; flex-direction: column; align-items: center; gap: 4px;
+  cursor: pointer; color: var(--text-muted);
+  transition: color var(--transition);
+  font-size: 11px;
+}
+.quick-tool:hover { color: var(--text); }
+.quick-tool .icon { font-size: 20px; }
+.quick-tool.fav { color: var(--gold); }
+
+/* Navigation Buttons */
+.word-nav {
+  display: flex; align-items: center; justify-content: space-between;
+  gap: 12px;
+}
+.btn-nav {
+  display: flex; align-items: center; gap: 6px;
+  padding: 10px 20px; border-radius: var(--radius-xs);
+  font-size: 14px; font-weight: 600;
+  cursor: pointer; border: none; transition: all var(--transition);
+}
+.btn-prev { background: var(--bg-card); border: 1px solid var(--border); color: var(--text-sec); }
+.btn-prev:hover { color: var(--text); background: var(--bg-card-hover); }
+.btn-next { background: linear-gradient(135deg, var(--purple), var(--purple-dark)); color: white; }
+.btn-next:hover { opacity: 0.85; }
+.btn-quiz {
+  background: linear-gradient(135deg, var(--gold), var(--gold-dark));
+  color: #1a1a1a; font-weight: 700;
+  padding: 10px 24px; border-radius: var(--radius-xs);
+  border: none; cursor: pointer; font-size: 14px;
+  transition: all var(--transition);
+}
+.btn-quiz:hover { opacity: 0.85; transform: translateY(-1px); }
+
+/* Level Progress Footer */
+.level-footer {
+  background: var(--bg-card);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  padding: 16px 20px;
+  display: flex; align-items: center; justify-content: space-between;
+  margin-top: 16px;
+}
+.level-footer-left { }
+.level-footer-left p { font-size: 13px; color: var(--text-sec); }
+.level-footer-left .progress-bar { width: 200px; margin-top: 6px; }
+.level-footer-right { text-align: right; }
+.level-footer-right .pct { font-size: 22px; font-weight: 800; color: var(--gold); }
+.level-footer-right p { font-size: 11px; color: var(--text-muted); }
+.unlock-btn {
+  background: linear-gradient(135deg, var(--gold), var(--gold-dark));
+  color: #1a1a1a; font-weight: 700;
+  padding: 8px 20px; border-radius: var(--radius-xs);
+  border: none; cursor: pointer; font-size: 13px;
+  margin-top: 8px;
+}
+
+/* Stats bar */
+.vocab-stats-bar {
+  display: flex; gap: 20px; align-items: center;
+  padding: 12px 20px;
+  background: var(--bg-card);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  margin-bottom: 16px;
+}
+.vocab-stat { text-align: center; }
+.vocab-stat .val { font-size: 20px; font-weight: 800; color: var(--gold); }
+.vocab-stat .lbl { font-size: 11px; color: var(--text-muted); }
+</style>
+</head>
+<body>
+<div class="app-layout vocab-layout">
+
+<!-- SIDEBAR 1 -->
+<aside class="sidebar1" id="sidebar1">
+  <button class="sidebar1-collapse-btn" id="sidebar-collapse">‹</button>
+  <div class="sidebar1-logo">
+    <div class="logo-icon">🏆</div>
+    <div class="logo-text"><h2>LING</h2><p>English Interactive Learning System</p></div>
+  </div>
+  <nav class="sidebar1-nav">
+    <a class="nav-item" href="../index.html"><span class="nav-icon">🏠</span><span class="nav-label">首頁總覽</span></a>
+    <a class="nav-item active" href="vocabulary.html"><span class="nav-icon">📖</span><span class="nav-label">單字學習</span></a>
+    <a class="nav-item" href="phrases.html"><span class="nav-icon">📝</span><span class="nav-label">片語學習</span></a>
+    <a class="nav-item" href="grammar.html"><span class="nav-icon">📚</span><span class="nav-label">文法學習</span></a>
+    <a class="nav-item" href="reading.html"><span class="nav-icon">📄</span><span class="nav-label">閱讀測驗</span></a>
+    <a class="nav-item" href="wrongbook.html"><span class="nav-icon">❌</span><span class="nav-label">錯題本</span></a>
+    <a class="nav-item" href="favorite.html"><span class="nav-icon">⭐</span><span class="nav-label">我的收藏</span></a>
+    <a class="nav-item" href="journal.html"><span class="nav-icon">📅</span><span class="nav-label">學習日誌</span></a>
+    <a class="nav-item" href="game.html"><span class="nav-icon">🎮</span><span class="nav-label">遊戲中心</span></a>
+    <a class="nav-item" href="settings.html"><span class="nav-icon">⚙️</span><span class="nav-label">設定</span></a>
+  </nav>
+  <div class="sidebar1-profile">
+    <div class="profile-avatar profile-avatar-img">翎</div>
+    <div class="profile-info">
+      <h4><span class="profile-name">翎庭</span> <span class="lv-badge">Lv.1</span></h4>
+      <p>LING Student</p>
+    </div>
+  </div>
+</aside>
+
+<!-- SIDEBAR 2 - Level List -->
+<aside class="sidebar2" id="sidebar2">
+  <div class="sidebar2-header">
+    <div>
+      <h2>📖 單字學習</h2>
+      <p>從基礎到進階，循序提升你的單字實力！</p>
+    </div>
+    <button class="sidebar2-collapse-btn" onclick="toggleSidebar2()" title="收合">‹</button>
+  </div>
+  <div class="sidebar2-filter">
+    <select class="filter-select" id="level-filter">
+      <option value="all">學測高頻 1500 字 ▾</option>
+      <option value="foundation">基礎入門 (1-30)</option>
+      <option value="intermediate">基礎進階 (31-60)</option>
+      <option value="advanced">進階強化 (61-100)</option>
+    </select>
+  </div>
+  <div class="level-list" id="level-list">
+    <!-- Generated by JS -->
+  </div>
+</aside>
+<button class="sidebar2-open-btn" id="sidebar2-open" onclick="toggleSidebar2()" title="展開">›</button>
+
+<!-- VOCAB CONTENT -->
+<main class="vocab-content animate-fadeIn">
+
+  <!-- Topbar -->
+  <div class="vocab-topbar">
+    <div>
+      <h1>📖 單字學習 <span style="font-size:14px;color:var(--text-muted);font-weight:400">從基礎到進階，循序提升你的單字實力！</span></h1>
+    </div>
+    <div style="display:flex;align-items:center;gap:8px;">
+      <div class="streak-badge" style="background:rgba(239,68,68,0.15);border:1px solid rgba(239,68,68,0.3);padding:6px 14px;border-radius:99px;font-size:12px;font-weight:600;color:#FCA5A5;display:flex;align-items:center;gap:6px;">
+        🔥 連續學習 <span id="streak-count">0</span> 天
+      </div>
+    </div>
+  </div>
+
+  <!-- Stats Bar -->
+  <div class="vocab-stats-bar">
+    <div class="vocab-stat"><div class="val" id="stat-learned">0</div><div class="lbl">已學單字</div></div>
+    <div style="width:1px;height:30px;background:var(--border)"></div>
+    <div class="vocab-stat"><div class="val" id="stat-total">1500</div><div class="lbl">總單字數</div></div>
+    <div style="width:1px;height:30px;background:var(--border)"></div>
+    <div class="vocab-stat"><div class="val" id="stat-acc">0%</div><div class="lbl">正確率</div></div>
+    <div style="flex:1">
+      <div style="font-size:11px;color:var(--text-muted);margin-bottom:4px">總進度</div>
+      <div class="progress-bar" style="height:6px"><div class="progress-fill" id="total-progress" style="width:0%"></div></div>
+    </div>
+    <div class="vocab-stat"><div class="val" id="stat-levels">0/100</div><div class="lbl">完成關卡</div></div>
+  </div>
+
+  <!-- Word Tabs (current level words) -->
+  <div class="word-tabs" id="word-tabs"></div>
+
+  <!-- Main Word Card -->
+  <div class="word-card" id="word-card">
+    <div class="word-main">
+      <div class="word-title" id="word-title">ability</div>
+      <div class="word-phonetic">
+        <span id="word-phonetic">/əˈbɪləti/</span>
+        <button class="btn-audio" onclick="speakWord()">🔊 發音</button>
+      </div>
+      <div class="word-chinese" id="word-chinese">n. 能力；才能</div>
+
+      <div class="word-detail-label">詳細解釋</div>
+      <div class="word-explanation" id="word-explanation">Ability means having the skill or power to do something. It refers to a person's natural or learned capacity to perform tasks.</div>
+
+      <div class="word-detail-label">例句</div>
+      <div class="word-example-box">
+        <div class="en" id="word-example">She has the <em id="word-highlight">ability</em> to solve complex problems.</div>
+        <div class="zh" id="word-example-zh">她有解決複雜問題的能力。</div>
+      </div>
+
+      <div class="word-detail-label">同義詞</div>
+      <div class="synonyms-row" id="synonyms-row">
+        <span class="synonym-tag">capability</span>
+        <span class="synonym-tag">skill</span>
+        <span class="synonym-tag">talent</span>
+      </div>
+
+      <div class="quick-tools">
+        <div class="quick-tool" onclick="toggleFav(this)" id="fav-btn">
+          <span class="icon">☆</span><span>收藏</span>
+        </div>
+        <div class="quick-tool" onclick="addNote()">
+          <span class="icon">📝</span><span>筆記</span>
+        </div>
+        <div class="quick-tool" onclick="addWrongbook()">
+          <span class="icon">📚</span><span>加入錯題</span>
+        </div>
+        <div class="quick-tool" onclick="shareWord()">
+          <span class="icon">📤</span><span>分享</span>
+        </div>
+      </div>
+    </div>
+
+    <div class="word-right">
+      <div class="word-brain-placeholder" id="brain-container">
+        <img src="../assets/images/brain.jpg" alt="brain"
+          style="width:100%;height:100%;object-fit:cover;border-radius:var(--radius-sm)"
+          onerror="this.parentElement.innerHTML='🧠'">
+      </div>
+
+      <div class="mistakes-box">
+        <h4>⚠️ 常見錯誤</h4>
+        <div class="mistake-item" id="mistakes-area">
+          <div class="mistake-wrong">✗ ability of <span>(錯誤用法)</span></div>
+          <div class="mistake-correct">✓ ability to + V（正確搭配）</div>
+        </div>
+      </div>
+
+      <div style="margin-top:14px;">
+        <div class="word-detail-label">快速功能</div>
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:8px;">
+          <button class="btn btn-ghost" onclick="speakWord()" style="justify-content:center;font-size:12px;">🔊 發音</button>
+          <button class="btn btn-ghost" onclick="toggleFav()" style="justify-content:center;font-size:12px;">⭐ 收藏</button>
+          <button class="btn btn-ghost" style="justify-content:center;font-size:12px;">📝 筆記</button>
+          <button class="btn btn-ghost" style="justify-content:center;font-size:12px;">📤 分享</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Navigation -->
+  <div class="word-nav">
+    <button class="btn-nav btn-prev" onclick="prevWord()">← 上一個</button>
+    <div style="font-size:13px;color:var(--text-muted)" id="word-counter">1 / 15</div>
+    <button class="btn-nav btn-next" onclick="nextWord()">下一個 →</button>
+    <button class="btn-quiz" onclick="startQuiz()">📝 開始測驗</button>
+  </div>
+
+  <!-- Level Progress Footer -->
+  <div class="level-footer" id="level-footer">
+    <div class="level-footer-left">
+      <p id="level-footer-title">Level 01 基礎入門 (1-15) — 已完成 ✓</p>
+      <div class="progress-bar" style="width:200px;margin-top:6px;">
+        <div class="progress-fill" id="level-footer-bar" style="width:100%"></div>
+      </div>
+    </div>
+    <div class="level-footer-right">
+      <div class="pct" id="level-footer-pct">0%</div>
+      <p>本關正確率</p>
+      <button class="unlock-btn" id="unlock-btn" onclick="unlockNext()">🔓 解鎖 Level 02</button>
+    </div>
+  </div>
+
+  <div class="footer" style="margin-top:20px;">
+    Designed by CHIEN, HSIAO-CHUAN ｜ Ling English Interactive Learning System ｜ © All Rights Reserved
+  </div>
+</main>
+</div>
+
+<script src="../js/app.js"></script>
+<script>
+// ===== VOCABULARY DATA — loaded from JSON =====
+const VOCAB_DATA = {};
+let vocabLoaded = false;
+
+async function loadVocabData() {
+  try {
+    const res = await fetch('../data/vocabulary/level01.json');
+    const all = await res.json();
+    // group by level 1-10
+    for(let lv=1; lv<=10; lv++){
+      VOCAB_DATA[lv] = all.filter(w => w.level === lv);
+    }
+    vocabLoaded = true;
+  } catch(e) {
+    console.warn('JSON load failed, using fallback');
+    vocabLoaded = true;
+  }
+}
+
+// ===== VOCABULARY DATA — 直接內嵌，不用fetch =====
+const VOCAB_DATA = {};
+
+function loadVocabData() {
+  // 所有150個單字直接內嵌，避免 file:// 協議 fetch 失敗
+  const ALL_WORDS = [
+    {id:"vocab_0001",level:1,word:"go",chinese:"v. 去；走",phonetic:"/ɡoʊ/",example:"I go to school every day.",exampleZh:"我每天去上學。",explanation:"To move from one place to another.",synonyms:["move","travel","head"],mistake:{wrong:"I am go. (錯誤)",correct:"I go. / I am going. (正確)"}},
+    {id:"vocab_0002",level:1,word:"eat",chinese:"v. 吃",phonetic:"/iːt/",example:"She eats breakfast every morning.",exampleZh:"她每天早上吃早餐。",explanation:"To put food in your mouth and swallow it.",synonyms:["have","consume","dine"],mistake:{wrong:"She eat. (錯誤，第三人稱單數)",correct:"She eats. (正確)"}},
+    {id:"vocab_0003",level:1,word:"big",chinese:"adj. 大的",phonetic:"/bɪɡ/",example:"That is a big dog.",exampleZh:"那是一隻大狗。",explanation:"Large in size or amount.",synonyms:["large","huge","great"],mistake:{wrong:"more big (錯誤)",correct:"bigger (比較級正確)"}},
+    {id:"vocab_0004",level:1,word:"good",chinese:"adj. 好的；優秀的",phonetic:"/ɡʊd/",example:"She is a good student.",exampleZh:"她是一個好學生。",explanation:"Of high quality or a high standard.",synonyms:["great","excellent","fine"],mistake:{wrong:"more good (錯誤)",correct:"better (比較級正確)"}},
+    {id:"vocab_0005",level:1,word:"day",chinese:"n. 天；白天",phonetic:"/deɪ/",example:"Today is a beautiful day.",exampleZh:"今天是美好的一天。",explanation:"A period of 24 hours.",synonyms:["date","time","period"],mistake:{wrong:"in the day (模糊)",correct:"during the day (白天期間)"}},
+    {id:"vocab_0006",level:1,word:"home",chinese:"n. 家；住所",phonetic:"/hoʊm/",example:"I go home after school.",exampleZh:"放學後我回家。",explanation:"The place where you live.",synonyms:["house","residence","place"],mistake:{wrong:"go to home (錯誤)",correct:"go home (正確，不加 to)"}},
+    {id:"vocab_0007",level:1,word:"food",chinese:"n. 食物",phonetic:"/fuːd/",example:"This food is delicious.",exampleZh:"這食物很美味。",explanation:"Things that people or animals eat.",synonyms:["meal","dish","cuisine"],mistake:{wrong:"a food (錯誤，不可數)",correct:"some food / a piece of food (正確)"}},
+    {id:"vocab_0008",level:1,word:"time",chinese:"n. 時間；次數",phonetic:"/taɪm/",example:"What time is it now?",exampleZh:"現在幾點了？",explanation:"The ongoing sequence of events.",synonyms:["moment","period","hour"],mistake:{wrong:"What is the time now? (較正式)",correct:"What time is it? (口語常用)"}},
+    {id:"vocab_0009",level:1,word:"see",chinese:"v. 看見；理解",phonetic:"/siː/",example:"I can see the mountain clearly.",exampleZh:"我可以清楚地看見那座山。",explanation:"To notice something using your eyes.",synonyms:["look","watch","observe"],mistake:{wrong:"I am seeing him now. (感官動詞)",correct:"I see him now. (正確)"}},
+    {id:"vocab_0010",level:1,word:"come",chinese:"v. 來；到來",phonetic:"/kʌm/",example:"Please come here.",exampleZh:"請過來這裡。",explanation:"To move toward the speaker.",synonyms:["arrive","approach","reach"],mistake:{wrong:"come to here (錯誤)",correct:"come here (正確，不加 to)"}},
+    {id:"vocab_0011",level:1,word:"get",chinese:"v. 得到；變得",phonetic:"/ɡɛt/",example:"I get up at 7 every morning.",exampleZh:"我每天早上七點起床。",explanation:"To receive or obtain something.",synonyms:["obtain","receive","gain"],mistake:{wrong:"get up to (錯誤)",correct:"get up (起床，不加 to)"}},
+    {id:"vocab_0012",level:1,word:"give",chinese:"v. 給予",phonetic:"/ɡɪv/",example:"She gave me a gift.",exampleZh:"她給了我一個禮物。",explanation:"To hand something to someone.",synonyms:["offer","provide","present"],mistake:{wrong:"give to me it (語序錯誤)",correct:"give it to me / give me it (正確)"}},
+    {id:"vocab_0013",level:1,word:"know",chinese:"v. 知道；認識",phonetic:"/noʊ/",example:"I know her very well.",exampleZh:"我很了解她。",explanation:"To have information about something.",synonyms:["understand","realize","recognize"],mistake:{wrong:"I am knowing. (錯誤，狀態動詞)",correct:"I know. (正確)"}},
+    {id:"vocab_0014",level:1,word:"take",chinese:"v. 拿；帶；花費",phonetic:"/teɪk/",example:"It takes 30 minutes to get there.",exampleZh:"到那裡需要30分鐘。",explanation:"To carry or move something.",synonyms:["bring","carry","grab"],mistake:{wrong:"spend 30 minutes to go (人當主詞用spend)",correct:"It takes / I spend (正確用法)"}},
+    {id:"vocab_0015",level:1,word:"work",chinese:"v./n. 工作；運作",phonetic:"/wɜːrk/",example:"My father works hard every day.",exampleZh:"我父親每天努力工作。",explanation:"To do a job or task.",synonyms:["labor","operate","function"],mistake:{wrong:"work hard at (混用)",correct:"work hard / work on something (正確)"}},
+    {id:"vocab_0016",level:2,word:"happy",chinese:"adj. 快樂的；高興的",phonetic:"/ˈhæpi/",example:"She looks very happy today.",exampleZh:"她今天看起來很快樂。",explanation:"Feeling or showing pleasure.",synonyms:["joyful","glad","pleased"],mistake:{wrong:"feel happily (錯誤，接形容詞)",correct:"feel happy (正確)"}},
+    {id:"vocab_0017",level:2,word:"friend",chinese:"n. 朋友",phonetic:"/frɛnd/",example:"He is my best friend.",exampleZh:"他是我最好的朋友。",explanation:"A person you like and enjoy spending time with.",synonyms:["pal","buddy","companion"],mistake:{wrong:"a good friend of mine (過長)",correct:"my good friend (簡潔正確)"}},
+    {id:"vocab_0018",level:2,word:"school",chinese:"n. 學校",phonetic:"/skuːl/",example:"I walk to school every day.",exampleZh:"我每天走路去學校。",explanation:"A place where children go to learn.",synonyms:["academy","institution","college"],mistake:{wrong:"go to the school (特指才加the)",correct:"go to school (一般上學不加the)"}},
+    {id:"vocab_0019",level:2,word:"study",chinese:"v./n. 學習；研究",phonetic:"/ˈstʌdi/",example:"I study English every night.",exampleZh:"我每晚學習英文。",explanation:"To spend time learning about a subject.",synonyms:["learn","review","research"],mistake:{wrong:"study for an exam (可以)",correct:"study for an exam / review for a test (正確)"}},
+    {id:"vocab_0020",level:2,word:"water",chinese:"n. 水",phonetic:"/ˈwɔːtər/",example:"Drink more water every day.",exampleZh:"每天多喝水。",explanation:"The clear liquid that falls as rain.",synonyms:["liquid","fluid","H2O"],mistake:{wrong:"a water (錯誤，不可數)",correct:"a glass of water / some water (正確)"}},
+    {id:"vocab_0021",level:2,word:"book",chinese:"n. 書；v. 預訂",phonetic:"/bʊk/",example:"I read a book before bed.",exampleZh:"我睡前讀一本書。",explanation:"A written work published in printed form.",synonyms:["text","volume","novel"],mistake:{wrong:"read books (沒問題，但)",correct:"read a book / read books (兩者皆可)"}},
+    {id:"vocab_0022",level:2,word:"family",chinese:"n. 家人；家庭",phonetic:"/ˈfæməli/",example:"My family is very important to me.",exampleZh:"我的家人對我非常重要。",explanation:"A group of people who are related.",synonyms:["relatives","household","clan"],mistake:{wrong:"my family are (英式可以，但)",correct:"my family is (美式標準用法)"}},
+    {id:"vocab_0023",level:2,word:"love",chinese:"v./n. 愛；熱愛",phonetic:"/lʌv/",example:"I love eating pizza.",exampleZh:"我很愛吃披薩。",explanation:"A strong feeling of affection.",synonyms:["adore","cherish","like"],mistake:{wrong:"I am loving it! (廣告用法，非標準)",correct:"I love it! (正確)"}},
+    {id:"vocab_0024",level:2,word:"want",chinese:"v. 想要",phonetic:"/wɒnt/",example:"I want to be a doctor.",exampleZh:"我想成為一名醫生。",explanation:"To feel a desire for something.",synonyms:["wish","desire","hope"],mistake:{wrong:"want + V (直接接動詞)",correct:"want to + V (正確)"}},
+    {id:"vocab_0025",level:2,word:"play",chinese:"v. 玩；演奏",phonetic:"/pleɪ/",example:"She plays the piano very well.",exampleZh:"她鋼琴彈得很好。",explanation:"To engage in activity for enjoyment.",synonyms:["perform","engage","participate"],mistake:{wrong:"play the basketball (運動不加the)",correct:"play basketball / play the piano (樂器加the)"}},
+    {id:"vocab_0026",level:2,word:"make",chinese:"v. 製作；使得",phonetic:"/meɪk/",example:"She made a delicious cake.",exampleZh:"她做了一個美味的蛋糕。",explanation:"To create or produce something.",synonyms:["create","produce","build"],mistake:{wrong:"make someone to do (錯誤)",correct:"make someone do (使役動詞，不加to)"}},
+    {id:"vocab_0027",level:2,word:"find",chinese:"v. 找到；發現",phonetic:"/faɪnd/",example:"I can't find my keys.",exampleZh:"我找不到我的鑰匙。",explanation:"To discover or locate something.",synonyms:["discover","locate","spot"],mistake:{wrong:"find out the key (find out用於資訊)",correct:"find the key / find out the answer (正確區分)"}},
+    {id:"vocab_0028",level:2,word:"tell",chinese:"v. 告訴；辨別",phonetic:"/tɛl/",example:"Please tell me the truth.",exampleZh:"請告訴我真相。",explanation:"To communicate information to someone.",synonyms:["say","inform","explain"],mistake:{wrong:"tell to someone (錯誤)",correct:"tell someone (直接接人，不加to)"}},
+    {id:"vocab_0029",level:2,word:"need",chinese:"v./n. 需要",phonetic:"/niːd/",example:"I need more time to finish this.",exampleZh:"我需要更多時間完成這個。",explanation:"To require something as essential.",synonyms:["require","demand","must"],mistake:{wrong:"need + V (錯誤)",correct:"need to + V / need + N (正確)"}},
+    {id:"vocab_0030",level:2,word:"think",chinese:"v. 認為；思考",phonetic:"/θɪŋk/",example:"I think she is right.",exampleZh:"我認為她是對的。",explanation:"To use your mind to consider ideas.",synonyms:["believe","consider","feel"],mistake:{wrong:"I am thinking she is right. (狀態動詞)",correct:"I think she is right. (正確)"}},
+    {id:"vocab_0031",level:3,word:"begin",chinese:"v. 開始",phonetic:"/bɪˈɡɪn/",example:"Let's begin the lesson now.",exampleZh:"我們現在開始上課吧。",explanation:"To start doing something.",synonyms:["start","commence","launch"],mistake:{wrong:"begin to doing (錯誤)",correct:"begin to do / begin doing (兩者皆可)"}},
+    {id:"vocab_0032",level:3,word:"change",chinese:"v./n. 改變；零錢",phonetic:"/tʃeɪndʒ/",example:"Things change over time.",exampleZh:"事物隨時間而改變。",explanation:"To become or make different.",synonyms:["alter","transform","modify"],mistake:{wrong:"change into (改變成某物形態)",correct:"change into / change to (兩者用法略有不同)"}},
+    {id:"vocab_0033",level:3,word:"help",chinese:"v./n. 幫助",phonetic:"/hɛlp/",example:"Can you help me with this?",exampleZh:"你能幫我做這個嗎？",explanation:"To make something easier for someone.",synonyms:["assist","support","aid"],mistake:{wrong:"help someone to do (較正式)",correct:"help someone do / help someone to do (兩者皆可)"}},
+    {id:"vocab_0034",level:3,word:"keep",chinese:"v. 保持；繼續",phonetic:"/kiːp/",example:"Keep working hard and you'll succeed.",exampleZh:"繼續努力，你就會成功。",explanation:"To continue doing or having something.",synonyms:["maintain","continue","hold"],mistake:{wrong:"keep to do (錯誤)",correct:"keep doing (正確)"}},
+    {id:"vocab_0035",level:3,word:"run",chinese:"v. 跑；經營",phonetic:"/rʌn/",example:"She runs five kilometers every morning.",exampleZh:"她每天早上跑五公里。",explanation:"To move quickly on foot.",synonyms:["sprint","jog","race"],mistake:{wrong:"run a fever (也可說)",correct:"have a fever / run a fever (兩者皆可)"}},
+    {id:"vocab_0036",level:3,word:"call",chinese:"v. 打電話；稱呼",phonetic:"/kɔːl/",example:"Please call me when you arrive.",exampleZh:"你到了請打電話給我。",explanation:"To speak to someone by telephone.",synonyms:["phone","contact","name"],mistake:{wrong:"call to someone (錯誤)",correct:"call someone (直接接受詞)"}},
+    {id:"vocab_0037",level:3,word:"turn",chinese:"v. 轉；變成",phonetic:"/tɜːrn/",example:"Turn left at the traffic light.",exampleZh:"在紅綠燈左轉。",explanation:"To move in a circular direction.",synonyms:["rotate","spin","become"],mistake:{wrong:"turn into + adj. (錯誤)",correct:"turn + adj. / turn into + N (正確)"}},
+    {id:"vocab_0038",level:3,word:"feel",chinese:"v. 感覺；摸",phonetic:"/fiːl/",example:"I feel tired after the long trip.",exampleZh:"長途旅行後我感到疲倦。",explanation:"To experience an emotion or sensation.",synonyms:["sense","experience","notice"],mistake:{wrong:"feel tiredly (錯誤，接形容詞)",correct:"feel tired (正確)"}},
+    {id:"vocab_0039",level:3,word:"try",chinese:"v. 嘗試；努力",phonetic:"/traɪ/",example:"Try to finish your homework first.",exampleZh:"先試著完成你的作業。",explanation:"To make an effort to do something.",synonyms:["attempt","effort","test"],mistake:{wrong:"try to doing (錯誤)",correct:"try to do / try doing (意思不同)"}},
+    {id:"vocab_0040",level:3,word:"show",chinese:"v. 顯示；展示 n. 表演",phonetic:"/ʃoʊ/",example:"Please show me your homework.",exampleZh:"請讓我看你的作業。",explanation:"To let someone see something.",synonyms:["display","present","demonstrate"],mistake:{wrong:"show to me it (語序錯誤)",correct:"show me it / show it to me (正確)"}},
+    {id:"vocab_0041",level:3,word:"walk",chinese:"v./n. 走路；散步",phonetic:"/wɔːk/",example:"I walk to school every morning.",exampleZh:"我每天早上走路去學校。",explanation:"To move at a regular pace on foot.",synonyms:["stroll","hike","march"],mistake:{wrong:"walk to the school (一般上學)",correct:"walk to school (不加冠詞)"}},
+    {id:"vocab_0042",level:3,word:"send",chinese:"v. 寄送；發送",phonetic:"/sɛnd/",example:"I sent her an email this morning.",exampleZh:"我今天早上發了一封電子郵件給她。",explanation:"To cause something to go to another place.",synonyms:["deliver","transmit","mail"],mistake:{wrong:"send to her an email (語序)",correct:"send her an email / send an email to her (正確)"}},
+    {id:"vocab_0043",level:3,word:"meet",chinese:"v. 遇見；開會",phonetic:"/miːt/",example:"Nice to meet you!",exampleZh:"很高興認識你！",explanation:"To come into someone's presence.",synonyms:["encounter","greet","gather"],mistake:{wrong:"nice meeting you (道別時用)",correct:"nice to meet you (初次見面) / nice meeting you (道別)"}},
+    {id:"vocab_0044",level:3,word:"ask",chinese:"v. 詢問；請求",phonetic:"/æsk/",example:"She asked me a difficult question.",exampleZh:"她問了我一個困難的問題。",explanation:"To request information or help.",synonyms:["inquire","question","request"],mistake:{wrong:"ask to someone (錯誤)",correct:"ask someone (直接接人)"}},
+    {id:"vocab_0045",level:3,word:"wait",chinese:"v. 等待",phonetic:"/weɪt/",example:"Please wait for me outside.",exampleZh:"請在外面等我。",explanation:"To stay until something happens.",synonyms:["stay","pause","hold on"],mistake:{wrong:"wait someone (錯誤)",correct:"wait for someone (正確)"}},
+    {id:"vocab_0046",level:4,word:"place",chinese:"n. 地方；v. 放置",phonetic:"/pleɪs/",example:"This is a beautiful place.",exampleZh:"這是一個美麗的地方。",explanation:"A particular position or location.",synonyms:["location","spot","area"],mistake:{wrong:"in a place (一般用法)",correct:"in a place / at a place (視情況用)"}},
+    {id:"vocab_0047",level:4,word:"follow",chinese:"v. 跟隨；遵循",phonetic:"/ˈfɒloʊ/",example:"Follow the instructions carefully.",exampleZh:"仔細遵循說明。",explanation:"To go after someone or obey rules.",synonyms:["chase","pursue","obey"],mistake:{wrong:"follow after (redundant)",correct:"follow (直接用，不需after)"}},
+    {id:"vocab_0048",level:4,word:"move",chinese:"v. 移動；搬家",phonetic:"/muːv/",example:"She moved to Taipei last year.",exampleZh:"她去年搬到台北。",explanation:"To change position or location.",synonyms:["shift","transfer","relocate"],mistake:{wrong:"move to abroad (錯誤)",correct:"move abroad (不加to)"}},
+    {id:"vocab_0049",level:4,word:"stand",chinese:"v. 站立；忍受",phonetic:"/stænd/",example:"Please stand up when the teacher enters.",exampleZh:"老師進來時請起立。",explanation:"To be in an upright position.",synonyms:["rise","tolerate","endure"],mistake:{wrong:"can't stand to do (一般)",correct:"can't stand doing (正確搭配)"}},
+    {id:"vocab_0050",level:4,word:"lose",chinese:"v. 失去；輸",phonetic:"/luːz/",example:"Don't lose hope.",exampleZh:"不要失去希望。",explanation:"To no longer have something.",synonyms:["misplace","fail","miss"],mistake:{wrong:"loose (發音混淆，loose=鬆的)",correct:"lose (失去) ≠ loose (鬆的)"}},
+    {id:"vocab_0051",level:4,word:"open",chinese:"v./adj. 打開；開放的",phonetic:"/ˈoʊpən/",example:"Please open the window.",exampleZh:"請打開窗戶。",explanation:"To move something so it is no longer closed.",synonyms:["unlock","uncover","start"],mistake:{wrong:"open up the window (多餘)",correct:"open the window (直接用)"}},
+    {id:"vocab_0052",level:4,word:"close",chinese:"v./adj. 關閉；靠近的",phonetic:"/kloʊz/",example:"Please close the door behind you.",exampleZh:"請隨手關門。",explanation:"To shut something.",synonyms:["shut","seal","end"],mistake:{wrong:"close up (有時多餘)",correct:"close the door (直接用)"}},
+    {id:"vocab_0053",level:4,word:"learn",chinese:"v. 學習；得知",phonetic:"/lɜːrn/",example:"I want to learn how to cook.",exampleZh:"我想學如何烹飪。",explanation:"To gain knowledge through study.",synonyms:["study","master","acquire"],mistake:{wrong:"learn how cooking (錯誤)",correct:"learn how to cook (正確)"}},
+    {id:"vocab_0054",level:4,word:"live",chinese:"v. 居住；活著 adj. 現場的",phonetic:"/lɪv/",example:"She lives in Taipei.",exampleZh:"她住在台北。",explanation:"To make your home in a place.",synonyms:["reside","dwell","exist"],mistake:{wrong:"live at Taipei (錯誤)",correct:"live in Taipei (城市用 in)"}},
+    {id:"vocab_0055",level:4,word:"buy",chinese:"v. 購買",phonetic:"/baɪ/",example:"I bought a new phone yesterday.",exampleZh:"我昨天買了一支新手機。",explanation:"To get something by paying money.",synonyms:["purchase","acquire","get"],mistake:{wrong:"buy to someone (錯誤)",correct:"buy someone something / buy something for someone (正確)"}},
+    {id:"vocab_0056",level:4,word:"start",chinese:"v./n. 開始",phonetic:"/stɑːrt/",example:"The movie starts at 8 PM.",exampleZh:"電影晚上8點開始。",explanation:"To begin something.",synonyms:["begin","launch","commence"],mistake:{wrong:"start to doing (錯誤)",correct:"start to do / start doing (兩者皆可)"}},
+    {id:"vocab_0057",level:4,word:"leave",chinese:"v. 離開；留下",phonetic:"/liːv/",example:"She left home at 7 this morning.",exampleZh:"她今天早上7點離開家。",explanation:"To go away from a place.",synonyms:["depart","exit","abandon"],mistake:{wrong:"leave from (通常不加from)",correct:"leave (直接接地點)"}},
+    {id:"vocab_0058",level:4,word:"bring",chinese:"v. 帶來",phonetic:"/brɪŋ/",example:"Please bring your textbook tomorrow.",exampleZh:"明天請帶你的課本來。",explanation:"To carry something to a place.",synonyms:["carry","fetch","take"],mistake:{wrong:"bring to school it (語序)",correct:"bring it to school (正確)"}},
+    {id:"vocab_0059",level:4,word:"hear",chinese:"v. 聽見；得知",phonetic:"/hɪr/",example:"I can hear music from the next room.",exampleZh:"我可以聽到隔壁房間的音樂。",explanation:"To receive sound with your ears.",synonyms:["listen","perceive","learn"],mistake:{wrong:"I am hearing (感官動詞)",correct:"I hear (正確)"}},
+    {id:"vocab_0060",level:4,word:"hold",chinese:"v. 握住；舉行",phonetic:"/hoʊld/",example:"Please hold my bag for a moment.",exampleZh:"請幫我拿一下包包。",explanation:"To keep something in your hand.",synonyms:["grip","carry","keep"],mistake:{wrong:"hold a meeting (可以)",correct:"hold a meeting / have a meeting (兩者皆可)"}},
+    {id:"vocab_0061",level:5,word:"important",chinese:"adj. 重要的",phonetic:"/ɪmˈpɔːrtənt/",example:"Health is the most important thing.",exampleZh:"健康是最重要的事。",explanation:"Having great value or significance.",synonyms:["significant","essential","crucial"],mistake:{wrong:"more important than (可以)",correct:"more important than / as important as (正確)"}},
+    {id:"vocab_0062",level:5,word:"problem",chinese:"n. 問題；難題",phonetic:"/ˈprɒbləm/",example:"We need to solve this problem.",exampleZh:"我們需要解決這個問題。",explanation:"A situation that needs to be dealt with.",synonyms:["issue","difficulty","challenge"],mistake:{wrong:"have a problem with doing",correct:"have a problem with something / have trouble doing (正確)"}},
+    {id:"vocab_0063",level:5,word:"different",chinese:"adj. 不同的",phonetic:"/ˈdɪfrənt/",example:"Everyone has a different opinion.",exampleZh:"每個人都有不同的意見。",explanation:"Not the same as something else.",synonyms:["various","distinct","unlike"],mistake:{wrong:"different than (美式可以，但)",correct:"different from (標準用法)"}},
+    {id:"vocab_0064",level:5,word:"remember",chinese:"v. 記得；記住",phonetic:"/rɪˈmɛmbər/",example:"Remember to bring your umbrella.",exampleZh:"記得帶雨傘。",explanation:"To bring something back to your mind.",synonyms:["recall","recollect","memorize"],mistake:{wrong:"remember to do (未來事) vs remember doing (過去事)",correct:"remember to do (提醒) / remember doing (回憶)"}},
+    {id:"vocab_0065",level:5,word:"understand",chinese:"v. 理解；明白",phonetic:"/ˌʌndərˈstænd/",example:"Do you understand the question?",exampleZh:"你理解這個問題嗎？",explanation:"To know the meaning of something.",synonyms:["comprehend","grasp","know"],mistake:{wrong:"I am understanding (狀態動詞)",correct:"I understand (正確)"}},
+    {id:"vocab_0066",level:5,word:"language",chinese:"n. 語言",phonetic:"/ˈlæŋɡwɪdʒ/",example:"English is an international language.",exampleZh:"英語是一種國際語言。",explanation:"A system of communication used by people.",synonyms:["tongue","speech","dialect"],mistake:{wrong:"speak a language (可以，但)",correct:"speak a language / use a language (正確)"}},
+    {id:"vocab_0067",level:5,word:"experience",chinese:"n./v. 經驗；經歷",phonetic:"/ɪkˈspɪriəns/",example:"She has a lot of teaching experience.",exampleZh:"她有很多教學經驗。",explanation:"Knowledge gained through doing things.",synonyms:["knowledge","skill","background"],mistake:{wrong:"an experience (可數，特定經歷)",correct:"experience (不可數) / an experience (特定一次)"}},
+    {id:"vocab_0068",level:5,word:"future",chinese:"n./adj. 未來",phonetic:"/ˈfjuːtʃər/",example:"She has a bright future ahead.",exampleZh:"她有光明的未來。",explanation:"The time that will come after now.",synonyms:["prospect","tomorrow","coming"],mistake:{wrong:"in future (英式)",correct:"in the future (美式標準)"}},
+    {id:"vocab_0069",level:5,word:"practice",chinese:"v./n. 練習；實踐",phonetic:"/ˈpræktɪs/",example:"Practice makes perfect.",exampleZh:"熟能生巧。",explanation:"To do something repeatedly to improve.",synonyms:["exercise","train","rehearse"],mistake:{wrong:"practise (英式拼法)",correct:"practice (美式拼法，名詞和動詞同形)"}},
+    {id:"vocab_0070",level:5,word:"prepare",chinese:"v. 準備",phonetic:"/prɪˈpɛr/",example:"She prepared carefully for the exam.",exampleZh:"她為考試做了充分的準備。",explanation:"To make ready for something.",synonyms:["ready","arrange","plan"],mistake:{wrong:"prepare for to do (錯誤)",correct:"prepare for + N / prepare to + V (正確)"}},
+    {id:"vocab_0071",level:5,word:"describe",chinese:"v. 描述；形容",phonetic:"/dɪˈskraɪb/",example:"Can you describe what happened?",exampleZh:"你能描述發生了什麼事嗎？",explanation:"To say what something is like.",synonyms:["explain","depict","portray"],mistake:{wrong:"describe about (錯誤)",correct:"describe something (直接接受詞，不加about)"}},
+    {id:"vocab_0072",level:5,word:"suggest",chinese:"v. 建議；暗示",phonetic:"/səˈdʒɛst/",example:"I suggest taking a break now.",exampleZh:"我建議現在休息一下。",explanation:"To put forward an idea for consideration.",synonyms:["recommend","propose","advise"],mistake:{wrong:"suggest someone to do (錯誤)",correct:"suggest doing / suggest that someone do (正確)"}},
+    {id:"vocab_0073",level:5,word:"decide",chinese:"v. 決定",phonetic:"/dɪˈsaɪd/",example:"She decided to study abroad.",exampleZh:"她決定出國留學。",explanation:"To make a choice after thinking.",synonyms:["choose","determine","resolve"],mistake:{wrong:"decide + V (錯誤)",correct:"decide to + V (正確)"}},
+    {id:"vocab_0074",level:5,word:"discuss",chinese:"v. 討論",phonetic:"/dɪˈskʌs/",example:"Let's discuss the plan together.",exampleZh:"讓我們一起討論這個計劃。",explanation:"To talk about something with others.",synonyms:["talk about","debate","review"],mistake:{wrong:"discuss about (錯誤)",correct:"discuss something (直接接受詞)"}},
+    {id:"vocab_0075",level:5,word:"choose",chinese:"v. 選擇",phonetic:"/tʃuːz/",example:"You can choose any color you like.",exampleZh:"你可以選擇任何你喜歡的顏色。",explanation:"To select from several possibilities.",synonyms:["select","pick","decide on"],mistake:{wrong:"choose from between (多餘)",correct:"choose between A and B / choose from options (正確)"}},
+    {id:"vocab_0076",level:6,word:"develop",chinese:"v. 發展；開發",phonetic:"/dɪˈvɛləp/",example:"She developed her skills through hard work.",exampleZh:"她通過努力發展了自己的技能。",explanation:"To grow or cause to grow over time.",synonyms:["grow","expand","improve"],mistake:{wrong:"develop up (多餘)",correct:"develop (直接用)"}},
+    {id:"vocab_0077",level:6,word:"increase",chinese:"v./n. 增加",phonetic:"/ɪnˈkriːs/",example:"Exercise increases your energy.",exampleZh:"運動增加你的精力。",explanation:"To become or make larger.",synonyms:["rise","grow","boost"],mistake:{wrong:"increase up (多餘)",correct:"increase (直接用)"}},
+    {id:"vocab_0078",level:6,word:"compare",chinese:"v. 比較",phonetic:"/kəmˈpɛr/",example:"Compare these two products carefully.",exampleZh:"仔細比較這兩個產品。",explanation:"To look at similarities and differences.",synonyms:["contrast","evaluate","examine"],mistake:{wrong:"compare to (相似時用)",correct:"compare with (比較異同) / compare to (比喻)"}},
+    {id:"vocab_0079",level:6,word:"effect",chinese:"n. 效果；影響",phonetic:"/ɪˈfɛkt/",example:"The medicine had a positive effect.",exampleZh:"這藥有正面的效果。",explanation:"A result or outcome of something.",synonyms:["result","impact","outcome"],mistake:{wrong:"affect (動詞) vs effect (名詞)",correct:"affect = 動詞 / effect = 名詞"}},
+    {id:"vocab_0080",level:6,word:"benefit",chinese:"n./v. 好處；有益於",phonetic:"/ˈbɛnɪfɪt/",example:"Exercise has many health benefits.",exampleZh:"運動有很多健康好處。",explanation:"An advantage or gain from something.",synonyms:["advantage","gain","profit"],mistake:{wrong:"benefit from to (錯誤)",correct:"benefit from something (正確)"}},
+    {id:"vocab_0081",level:6,word:"process",chinese:"n./v. 過程；處理",phonetic:"/ˈprɒsɛs/",example:"Learning is a long process.",exampleZh:"學習是一個漫長的過程。",explanation:"A series of actions to achieve a result.",synonyms:["procedure","method","system"],mistake:{wrong:"in the process of doing (冗長)",correct:"while doing / in the process of + N (正確)"}},
+    {id:"vocab_0082",level:6,word:"research",chinese:"n./v. 研究",phonetic:"/ˈriːsɜːrtʃ/",example:"Scientists conduct research to find cures.",exampleZh:"科學家進行研究以尋找治療方法。",explanation:"Careful study to find new information.",synonyms:["study","investigation","inquiry"],mistake:{wrong:"a research (通常不可數)",correct:"research (不可數) / a research project (研究計劃)"}},
+    {id:"vocab_0083",level:6,word:"method",chinese:"n. 方法；方式",phonetic:"/ˈmɛθəd/",example:"There are different methods of learning.",exampleZh:"有不同的學習方法。",explanation:"A particular way of doing something.",synonyms:["way","approach","technique"],mistake:{wrong:"the method to do (有時)",correct:"a method of doing / a method for doing (正確)"}},
+    {id:"vocab_0084",level:6,word:"result",chinese:"n./v. 結果；導致",phonetic:"/rɪˈzʌlt/",example:"Hard work leads to good results.",exampleZh:"努力工作帶來好結果。",explanation:"Something that happens because of something else.",synonyms:["outcome","consequence","effect"],mistake:{wrong:"result from (起因) vs result in (結果)",correct:"result from (由⋯導致) / result in (導致⋯)"}},
+    {id:"vocab_0085",level:6,word:"system",chinese:"n. 系統；制度",phonetic:"/ˈsɪstəm/",example:"Taiwan has a good education system.",exampleZh:"台灣有良好的教育制度。",explanation:"A set of things working together.",synonyms:["structure","network","organization"],mistake:{wrong:"a system of do (錯誤)",correct:"a system of doing / a system for + N (正確)"}},
+    {id:"vocab_0086",level:6,word:"society",chinese:"n. 社會",phonetic:"/səˈsaɪəti/",example:"We all have a role in society.",exampleZh:"我們在社會中都有自己的角色。",explanation:"The community of people living together.",synonyms:["community","culture","civilization"],mistake:{wrong:"in the society (通常不加the)",correct:"in society (一般概念不加the)"}},
+    {id:"vocab_0087",level:6,word:"culture",chinese:"n. 文化",phonetic:"/ˈkʌltʃər/",example:"Taiwan has a rich culture.",exampleZh:"台灣有豐富的文化。",explanation:"The ideas and customs of a group of people.",synonyms:["tradition","heritage","civilization"],mistake:{wrong:"cultures of Taiwan (可以)",correct:"Taiwanese culture / the culture of Taiwan (正確)"}},
+    {id:"vocab_0088",level:6,word:"create",chinese:"v. 創造；創作",phonetic:"/kriˈeɪt/",example:"She created a beautiful painting.",exampleZh:"她創作了一幅美麗的畫。",explanation:"To make something new.",synonyms:["make","produce","design"],mistake:{wrong:"create something new (多餘)",correct:"create something (直接用)"}},
+    {id:"vocab_0089",level:6,word:"provide",chinese:"v. 提供",phonetic:"/prəˈvaɪd/",example:"The school provides free lunch.",exampleZh:"學校提供免費午餐。",explanation:"To give something that is needed.",synonyms:["supply","offer","give"],mistake:{wrong:"provide to someone (錯誤)",correct:"provide someone with something / provide something for someone (正確)"}},
+    {id:"vocab_0090",level:6,word:"support",chinese:"v./n. 支持；支援",phonetic:"/səˈpɔːrt/",example:"Thank you for your support.",exampleZh:"謝謝你的支持。",explanation:"To help or encourage someone.",synonyms:["help","assist","back"],mistake:{wrong:"give support to (正式)",correct:"support someone / give support to someone (兩者皆可)"}},
+    {id:"vocab_0091",level:7,word:"approach",chinese:"n./v. 方法；靠近",phonetic:"/əˈproʊtʃ/",example:"We need a new approach to this problem.",exampleZh:"我們需要用新方法解決這個問題。",explanation:"A way of dealing with something.",synonyms:["method","way","strategy"],mistake:{wrong:"approach to the problem (多餘)",correct:"approach to + N (名詞) / approach + V-ing (動詞)"}},
+    {id:"vocab_0092",level:7,word:"attitude",chinese:"n. 態度；看法",phonetic:"/ˈætɪtjuːd/",example:"A positive attitude helps you succeed.",exampleZh:"積極的態度幫助你成功。",explanation:"The way you think and feel about something.",synonyms:["mindset","outlook","perspective"],mistake:{wrong:"attitude to (也可以)",correct:"attitude toward / attitude towards (正式用法)"}},
+    {id:"vocab_0093",level:7,word:"maintain",chinese:"v. 維持；保養",phonetic:"/meɪnˈteɪn/",example:"It's important to maintain good habits.",exampleZh:"保持良好習慣很重要。",explanation:"To keep something in good condition.",synonyms:["keep","preserve","sustain"],mistake:{wrong:"maintain to do (錯誤)",correct:"maintain + N / maintain doing (正確)"}},
+    {id:"vocab_0094",level:7,word:"resource",chinese:"n. 資源",phonetic:"/ˈriːsɔːrs/",example:"Water is a precious natural resource.",exampleZh:"水是珍貴的自然資源。",explanation:"Something useful that can be used.",synonyms:["supply","asset","material"],mistake:{wrong:"recourse (混淆)",correct:"resource (資源) ≠ recourse (手段)"}},
+    {id:"vocab_0095",level:7,word:"strategy",chinese:"n. 策略；戰略",phonetic:"/ˈstrætədʒi/",example:"You need a good strategy to win.",exampleZh:"你需要好的策略才能獲勝。",explanation:"A plan for achieving a goal.",synonyms:["plan","approach","tactic"],mistake:{wrong:"strategic (形容詞)",correct:"strategy (名詞) / strategic (形容詞)"}},
+    {id:"vocab_0096",level:7,word:"establish",chinese:"v. 建立；確立",phonetic:"/ɪˈstæblɪʃ/",example:"The school was established in 1950.",exampleZh:"這所學校建立於1950年。",explanation:"To set up or create something permanent.",synonyms:["found","create","set up"],mistake:{wrong:"establish up (多餘)",correct:"establish (直接用)"}},
+    {id:"vocab_0097",level:7,word:"participate",chinese:"v. 參與；參加",phonetic:"/pɑːrˈtɪsɪpeɪt/",example:"Everyone should participate in class.",exampleZh:"每個人都應該參與課堂。",explanation:"To take part in an activity.",synonyms:["join","engage","take part"],mistake:{wrong:"participate to (錯誤)",correct:"participate in (正確介系詞)"}},
+    {id:"vocab_0098",level:7,word:"significant",chinese:"adj. 重要的；顯著的",phonetic:"/sɪɡˈnɪfɪkənt/",example:"This is a significant achievement.",exampleZh:"這是一個重要的成就。",explanation:"Important or large enough to have an effect.",synonyms:["important","notable","meaningful"],mistake:{wrong:"significantly (副詞混淆)",correct:"significant (形容詞) / significantly (副詞)"}},
+    {id:"vocab_0099",level:7,word:"indicate",chinese:"v. 指出；顯示",phonetic:"/ˈɪndɪkeɪt/",example:"The data indicates a positive trend.",exampleZh:"數據顯示正面的趨勢。",explanation:"To show or point something out.",synonyms:["show","suggest","reveal"],mistake:{wrong:"indicate about (錯誤)",correct:"indicate + that 子句 / indicate + N (正確)"}},
+    {id:"vocab_0100",level:7,word:"consequence",chinese:"n. 後果；結果",phonetic:"/ˈkɒnsɪkwəns/",example:"Think about the consequences of your actions.",exampleZh:"想想你行為的後果。",explanation:"A result of an action or situation.",synonyms:["result","outcome","effect"],mistake:{wrong:"in consequence of (較正式)",correct:"as a consequence of / because of (正確)"}},
+    {id:"vocab_0101",level:8,word:"psychological",chinese:"adj. 心理的",phonetic:"/ˌsaɪkəˈlɒdʒɪkəl/",example:"Exercise has psychological benefits.",exampleZh:"運動有心理上的益處。",explanation:"Related to the mind and mental processes.",synonyms:["mental","emotional","cognitive"],mistake:{wrong:"psychologically (副詞混淆)",correct:"psychological (形容詞) / psychologically (副詞)"}},
+    {id:"vocab_0102",level:8,word:"sustainable",chinese:"adj. 永續的；可持續的",phonetic:"/səˈsteɪnəbəl/",example:"We need sustainable energy solutions.",exampleZh:"我們需要永續的能源解決方案。",explanation:"Able to continue without damaging the environment.",synonyms:["renewable","eco-friendly","lasting"],mistake:{wrong:"sustainably (副詞混淆)",correct:"sustainable (形容詞) / sustainably (副詞)"}},
+    {id:"vocab_0103",level:8,word:"phenomenon",chinese:"n. 現象",phonetic:"/fɪˈnɒmɪnən/",example:"Global warming is a serious phenomenon.",exampleZh:"全球暖化是一個嚴重的現象。",explanation:"Something that can be observed and studied.",synonyms:["occurrence","event","development"],mistake:{wrong:"phenomenons (錯誤複數)",correct:"phenomena (正確複數形式)"}},
+    {id:"vocab_0104",level:8,word:"controversial",chinese:"adj. 有爭議的",phonetic:"/ˌkɒntrəˈvɜːrʃəl/",example:"This is a controversial political issue.",exampleZh:"這是一個有爭議的政治議題。",explanation:"Causing disagreement or argument.",synonyms:["debatable","disputed","sensitive"],mistake:{wrong:"controversially (副詞混淆)",correct:"controversial (形容詞) / controversially (副詞)"}},
+    {id:"vocab_0105",level:8,word:"perspective",chinese:"n. 觀點；視角",phonetic:"/pərˈspɛktɪv/",example:"Consider this from a different perspective.",exampleZh:"從不同的角度來考慮這件事。",explanation:"A way of thinking about something.",synonyms:["viewpoint","standpoint","angle"],mistake:{wrong:"from the perspective of doing",correct:"from the perspective of + N (正確)"}},
+    {id:"vocab_0106",level:8,word:"interpretation",chinese:"n. 解釋；詮釋",phonetic:"/ɪnˌtɜːrprɪˈteɪʃən/",example:"There are different interpretations of this poem.",exampleZh:"這首詩有不同的詮釋。",explanation:"An explanation of the meaning of something.",synonyms:["explanation","understanding","reading"],mistake:{wrong:"interpret (動詞混淆)",correct:"interpretation (名詞) / interpret (動詞)"}},
+    {id:"vocab_0107",level:8,word:"implication",chinese:"n. 含義；暗示",phonetic:"/ˌɪmplɪˈkeɪʃən/",example:"Consider the implications of this decision.",exampleZh:"考慮這個決定的含義。",explanation:"A possible result or effect of something.",synonyms:["consequence","suggestion","meaning"],mistake:{wrong:"imply (動詞混淆)",correct:"implication (名詞) / imply (動詞)"}},
+    {id:"vocab_0108",level:8,word:"hypothesis",chinese:"n. 假說；假設",phonetic:"/haɪˈpɒθɪsɪs/",example:"The scientist tested her hypothesis.",exampleZh:"這位科學家測試了她的假說。",explanation:"An idea that needs to be tested.",synonyms:["theory","assumption","proposition"],mistake:{wrong:"hypothesises (錯誤複數)",correct:"hypotheses (正確複數形式)"}},
+    {id:"vocab_0109",level:8,word:"evaluation",chinese:"n. 評估；評價",phonetic:"/ɪˌvæljuˈeɪʃən/",example:"The teacher gave a fair evaluation.",exampleZh:"老師給出了公平的評估。",explanation:"The process of judging something's quality.",synonyms:["assessment","review","judgment"],mistake:{wrong:"evaluate (動詞混淆)",correct:"evaluation (名詞) / evaluate (動詞)"}},
+    {id:"vocab_0110",level:8,word:"innovation",chinese:"n. 創新；革新",phonetic:"/ˌɪnəˈveɪʃən/",example:"Innovation drives economic growth.",exampleZh:"創新推動經濟增長。",explanation:"A new idea or way of doing something.",synonyms:["creativity","invention","progress"],mistake:{wrong:"innovate (動詞混淆)",correct:"innovation (名詞) / innovate (動詞)"}},
+    {id:"vocab_0111",level:9,word:"analyze",chinese:"v. 分析",phonetic:"/ˈænəlaɪz/",example:"We need to analyze the data carefully.",exampleZh:"我們需要仔細分析數據。",explanation:"To examine something in detail.",synonyms:["examine","study","evaluate"],mistake:{wrong:"analyse (英式拼法)",correct:"analyze (美式) / analyse (英式)"}},
+    {id:"vocab_0112",level:9,word:"contribute",chinese:"v. 貢獻；促成",phonetic:"/kənˈtrɪbjuːt/",example:"Everyone can contribute to society.",exampleZh:"每個人都可以對社會做出貢獻。",explanation:"To give or add to something.",synonyms:["add","give","donate"],mistake:{wrong:"contribute to doing (錯誤)",correct:"contribute to + N (正確)"}},
+    {id:"vocab_0113",level:9,word:"emphasize",chinese:"v. 強調",phonetic:"/ˈɛmfəsaɪz/",example:"The teacher emphasized the importance of practice.",exampleZh:"老師強調練習的重要性。",explanation:"To give special importance to something.",synonyms:["stress","highlight","underline"],mistake:{wrong:"emphasize on (錯誤)",correct:"emphasize + N (直接接受詞)"}},
+    {id:"vocab_0114",level:9,word:"facilitate",chinese:"v. 促進；使容易",phonetic:"/fəˈsɪlɪteɪt/",example:"Technology facilitates communication.",exampleZh:"科技促進溝通。",explanation:"To make something easier.",synonyms:["enable","assist","promote"],mistake:{wrong:"facilitate to do (錯誤)",correct:"facilitate + N (正確)"}},
+    {id:"vocab_0115",level:9,word:"integrate",chinese:"v. 整合；融入",phonetic:"/ˈɪntɪɡreɪt/",example:"She integrated well into the new school.",exampleZh:"她很好地融入了新學校。",explanation:"To combine things so they work together.",synonyms:["combine","merge","incorporate"],mistake:{wrong:"integrate with into (混用)",correct:"integrate into (融入) / integrate with (結合)"}},
+    {id:"vocab_0116",level:9,word:"perceive",chinese:"v. 感知；理解",phonetic:"/pərˈsiːv/",example:"How do you perceive this situation?",exampleZh:"你如何看待這種情況？",explanation:"To become aware of something through senses.",synonyms:["sense","realize","understand"],mistake:{wrong:"perceive as (有時正確)",correct:"perceive as / perceive to be (正確)"}},
+    {id:"vocab_0117",level:9,word:"demonstrate",chinese:"v. 示範；證明",phonetic:"/ˈdɛmənstreɪt/",example:"The teacher demonstrated the experiment.",exampleZh:"老師示範了這個實驗。",explanation:"To show or prove something clearly.",synonyms:["show","prove","illustrate"],mistake:{wrong:"demonstrate about (錯誤)",correct:"demonstrate + N / demonstrate that + 子句 (正確)"}},
+    {id:"vocab_0118",level:9,word:"acknowledge",chinese:"v. 承認；確認",phonetic:"/əkˈnɒlɪdʒ/",example:"She acknowledged her mistake openly.",exampleZh:"她公開承認了自己的錯誤。",explanation:"To admit the truth of something.",synonyms:["admit","recognize","accept"],mistake:{wrong:"acknowledge about (錯誤)",correct:"acknowledge + N / acknowledge that + 子句 (正確)"}},
+    {id:"vocab_0119",level:9,word:"accommodate",chinese:"v. 容納；適應",phonetic:"/əˈkɒmədeɪt/",example:"The hotel can accommodate 200 guests.",exampleZh:"這家酒店可以容納200名客人。",explanation:"To provide space or adapt to needs.",synonyms:["house","adapt","adjust"],mistake:{wrong:"accomodate (拼錯)",correct:"accommodate (雙c雙m)"}},
+    {id:"vocab_0120",level:9,word:"circumstance",chinese:"n. 情況；環境",phonetic:"/ˈsɜːrkəmstæns/",example:"Under these circumstances, we must act fast.",exampleZh:"在這種情況下，我們必須快速行動。",explanation:"The conditions affecting a situation.",synonyms:["situation","condition","context"],mistake:{wrong:"in this circumstance (通常用複數)",correct:"under these circumstances / in these circumstances (正確)"}},
+    {id:"vocab_0121",level:10,word:"ambiguous",chinese:"adj. 模糊的；歧義的",phonetic:"/æmˈbɪɡjuəs/",example:"The instructions were ambiguous and confusing.",exampleZh:"這些說明模糊而令人困惑。",explanation:"Having more than one possible meaning.",synonyms:["unclear","vague","uncertain"],mistake:{wrong:"ambiguously (副詞混淆)",correct:"ambiguous (形容詞) / ambiguously (副詞)"}},
+    {id:"vocab_0122",level:10,word:"inevitable",chinese:"adj. 不可避免的",phonetic:"/ɪnˈɛvɪtəbəl/",example:"Change is inevitable in life.",exampleZh:"生命中的變化是不可避免的。",explanation:"Certain to happen and impossible to prevent.",synonyms:["unavoidable","certain","inescapable"],mistake:{wrong:"inevitably (副詞混淆)",correct:"inevitable (形容詞) / inevitably (副詞)"}},
+    {id:"vocab_0123",level:10,word:"elaborate",chinese:"v./adj. 詳細說明；精心的",phonetic:"/ɪˈlæbərət/",example:"Could you elaborate on your point?",exampleZh:"你能詳細說明你的觀點嗎？",explanation:"To add more detail to an explanation.",synonyms:["expand","explain","detail"],mistake:{wrong:"elaborate about (錯誤)",correct:"elaborate on something (正確介系詞)"}},
+    {id:"vocab_0124",level:10,word:"contradict",chinese:"v. 矛盾；反駁",phonetic:"/ˌkɒntrəˈdɪkt/",example:"Your actions contradict your words.",exampleZh:"你的行為與你的話相矛盾。",explanation:"To say the opposite of something.",synonyms:["oppose","deny","conflict"],mistake:{wrong:"contradict with (錯誤)",correct:"contradict + N (直接接受詞)"}},
+    {id:"vocab_0125",level:10,word:"sophisticated",chinese:"adj. 複雜的；精緻的",phonetic:"/səˈfɪstɪkeɪtɪd/",example:"This is a sophisticated machine.",exampleZh:"這是一台複雜精密的機器。",explanation:"Developed to a high degree of complexity.",synonyms:["advanced","complex","refined"],mistake:{wrong:"sophisticatedly (副詞混淆)",correct:"sophisticated (形容詞)"}},
+    {id:"vocab_0126",level:10,word:"implement",chinese:"v. 實施；執行",phonetic:"/ˈɪmplɪmɛnt/",example:"We will implement the new policy next month.",exampleZh:"我們下個月將實施新政策。",explanation:"To put a plan into action.",synonyms:["execute","carry out","apply"],mistake:{wrong:"implement on (錯誤)",correct:"implement + N (直接接受詞)"}},
+    {id:"vocab_0127",level:10,word:"resilience",chinese:"n. 韌性；恢復力",phonetic:"/rɪˈzɪliəns/",example:"She showed great resilience after failure.",exampleZh:"她在失敗後展現了強大的韌性。",explanation:"The ability to recover from difficulties.",synonyms:["toughness","strength","endurance"],mistake:{wrong:"resilient (形容詞混淆)",correct:"resilience (名詞) / resilient (形容詞)"}},
+    {id:"vocab_0128",level:10,word:"coherent",chinese:"adj. 連貫的；有條理的",phonetic:"/koʊˈhɪrənt/",example:"Please give a coherent explanation.",exampleZh:"請給出一個有條理的解釋。",explanation:"Logical and consistent.",synonyms:["logical","clear","organized"],mistake:{wrong:"coherently (副詞混淆)",correct:"coherent (形容詞) / coherently (副詞)"}},
+    {id:"vocab_0129",level:10,word:"unprecedented",chinese:"adj. 前所未有的",phonetic:"/ʌnˈprɛsɪdɛntɪd/",example:"This is an unprecedented achievement.",exampleZh:"這是前所未有的成就。",explanation:"Never having happened before.",synonyms:["new","novel","unique"],mistake:{wrong:"unprecedentedly (副詞較少用)",correct:"unprecedented (形容詞常用)"}},
+    {id:"vocab_0130",level:10,word:"pragmatic",chinese:"adj. 務實的；實用的",phonetic:"/præɡˈmætɪk/",example:"Take a pragmatic approach to the problem.",exampleZh:"用務實的方式解決問題。",explanation:"Dealing with things in a practical way.",synonyms:["practical","realistic","sensible"],mistake:{wrong:"pragmatically (副詞混淆)",correct:"pragmatic (形容詞) / pragmatically (副詞)"}}
+  ];
+  for(let lv=1; lv<=10; lv++){
+    VOCAB_DATA[lv] = ALL_WORDS.filter(w => w.level === lv);
+  }
+  // Level 11-30 載入
+  try {
+    const res = await fetch('../data/vocabulary/level11_30.json');
+    const words1130 = await res.json();
+    for(let lv=11; lv<=30; lv++){
+      VOCAB_DATA[lv] = words1130.filter(w => w.level === lv);
+    }
+  } catch(e) {
+    console.warn('Level 11-30 fetch failed, data pending');
+  }
+}
+
+// ===== STATE =====
+let currentLevel=1, currentWordIndex=0;
+let levelProgress={};
+let favorites=[];
+
+// ===== LEVEL NAMES =====
+const LEVEL_NAMES = {
+  1:'超基礎動詞', 2:'基礎動詞Ⅱ', 3:'日常動詞Ⅲ',
+  4:'生活動詞Ⅳ', 5:'中級詞彙',  6:'進階詞彙',
+  7:'學術詞彙',   8:'高級詞彙',  9:'精英詞彙', 10:'頂尖詞彙',
+  11:'日常字彙Ⅰ', 12:'日常字彙Ⅱ', 13:'日常字彙Ⅲ',
+  14:'日常字彙Ⅳ', 15:'日常字彙Ⅴ', 16:'中級字彙Ⅰ',
+  17:'中級字彙Ⅱ', 18:'中級字彙Ⅲ', 19:'中級字彙Ⅳ', 20:'中級字彙Ⅴ',
+  21:'生活字彙Ⅰ', 22:'生活字彙Ⅱ', 23:'生活字彙Ⅲ',
+  24:'生活字彙Ⅳ', 25:'生活字彙Ⅴ', 26:'進階字彙Ⅰ',
+  27:'進階字彙Ⅱ', 28:'進階字彙Ⅲ', 29:'進階字彙Ⅳ', 30:'進階字彙Ⅴ',
+  31:'學測核心Ⅰ', 32:'學測核心Ⅱ', 33:'學測核心Ⅲ',
+  34:'學測核心Ⅳ', 35:'學測核心Ⅴ', 36:'學測核心Ⅵ',
+  37:'學測核心Ⅶ', 38:'學測核心Ⅷ', 39:'學測核心Ⅸ', 40:'學測核心Ⅹ',
+  41:'高頻字彙Ⅰ', 42:'高頻字彙Ⅱ', 43:'高頻字彙Ⅲ',
+  44:'高頻字彙Ⅳ', 45:'高頻字彙Ⅴ', 46:'高頻字彙Ⅵ',
+  47:'高頻字彙Ⅶ', 48:'高頻字彙Ⅷ', 49:'高頻字彙Ⅸ', 50:'高頻字彙Ⅹ'
+};
+
+// ===== INIT =====
+document.addEventListener('DOMContentLoaded', async () => {
+  App.init();
+  loadVocabData();
+  loadProgress();
+  renderLevelList();
+  loadLevel(1);
+  try {
+    const [r1, r2, r3] = await Promise.all([
+      fetch('../data/vocabulary/level11_30.json'),
+      fetch('../data/vocabulary/level21_40.json'),
+      fetch('../data/vocabulary/level41_60.json')
+    ]);
+    const [w1130, w2140, w4160] = await Promise.all([r1.json(), r2.json(), r3.json()]);
+    for(let lv=11; lv<=30; lv++) VOCAB_DATA[lv] = w1130.filter(w=>w.level===lv);
+    for(let lv=21; lv<=40; lv++) VOCAB_DATA[lv] = (VOCAB_DATA[lv]||[]).concat(w2140.filter(w=>w.level===lv));
+    for(let lv=41; lv<=60; lv++) VOCAB_DATA[lv] = w4160.filter(w=>w.level===lv);
+    renderLevelList();
+  } catch(e) {
+    console.warn('Extended vocab not loaded via fetch (upload to GitHub Pages first)');
+  }
+});
+
+function loadProgress() {
+  const vp = Storage.load('ling_vocabulary_progress') || {};
+  levelProgress = vp.levelProgress || {};
+  favorites = Storage.load('ling_favorites')?.vocabulary || [];
+}
+
+function renderLevelList() {
+  const list = document.getElementById('level-list');
+  list.innerHTML = '';
+  for (let i = 1; i <= 100; i++) {
+    const lp = levelProgress[i] || {done:false, pct:0};
+    const hasData = !!(VOCAB_DATA[i] && VOCAB_DATA[i].length > 0);
+    const isLocked = i > 1 && !levelProgress[i-1]?.done && !hasData;
+    const isActive = i === currentLevel;
+    const isDone = lp.done;
+    const noData = !hasData && i > 10;
+
+    const el = document.createElement('div');
+    el.className = `level-item ${isActive?'active':''} ${isDone?'done':''} ${(isLocked||noData)?'locked':''}`;
+    el.innerHTML = `
+      <div class="level-num">${i < 10 ? '0'+i : i}</div>
+      <div class="level-info">
+        <p>${getLevelName(i)}</p>
+        <span>${getWordRange(i)}</span>
+        <div class="level-progress-bar"><div class="level-progress-fill" style="width:${lp.pct||0}%"></div></div>
+      </div>
+      <span class="level-status">${isDone ? '✓' : noData ? '⏳' : isLocked ? '🔒' : ''}</span>
+    `;
+    if (!isLocked && !noData) el.onclick = () => loadLevel(i);
+    list.appendChild(el);
+  }
+}
+
+function getLevelName(i) {
+  // Level 1-10 = actual data, 11-100 = future levels
+  if(i <= 10) return LEVEL_NAMES[i] || `Level ${i}`;
+  if(i <= 20) return '基礎詞彙';
+  if(i <= 40) return '進階詞彙';
+  if(i <= 70) return '學測高頻';
+  return '頂尖詞彙';
+}
+
+function getWordRange(i) {
+  const start = (i-1)*15+1;
+  const end = i*15;
+  return `${start}–${end}`;
+}
+
+function loadLevel(level) {
+  currentLevel = level;
+  currentWordIndex = 0;
+  renderLevelList();
+
+  const words = VOCAB_DATA[level];
+  if (!words) {
+    document.getElementById('word-title').textContent = '（此關卡資料載入中）';
+    return;
+  }
+  renderWordTabs(words);
+  renderWord(words[0]);
+  updateLevelFooter(level, words);
+}
+
+function renderWordTabs(words) {
+  const tabs = document.getElementById('word-tabs');
+  tabs.innerHTML = words.map((w, i) => `
+    <div class="word-tab ${i===0?'active':''}" onclick="jumpToWord(${i})">${w.word}</div>
+  `).join('');
+}
+
+function renderWord(word) {
+  if (!word) return;
+  document.getElementById('word-title').textContent = word.word;
+  document.getElementById('word-phonetic').textContent = word.phonetic;
+  document.getElementById('word-chinese').textContent = word.chinese;
+  document.getElementById('word-explanation').textContent = word.explanation;
+  document.getElementById('word-example').innerHTML = word.example.replace(
+    new RegExp(word.word, 'gi'),
+    `<em id="word-highlight">${word.word}</em>`
+  );
+  document.getElementById('word-example-zh').textContent = word.exampleZh;
+
+  const synRow = document.getElementById('synonyms-row');
+  synRow.innerHTML = (word.synonyms||[]).map(s => `<span class="synonym-tag">${s}</span>`).join('');
+
+  const mistakeArea = document.getElementById('mistakes-area');
+  if (word.mistake) {
+    mistakeArea.innerHTML = `
+      <div class="mistake-wrong">✗ ${word.mistake.wrong}</div>
+      <div class="mistake-correct">✓ ${word.mistake.correct}</div>
+    `;
+  }
+
+  // Fav
+  const favBtn = document.getElementById('fav-btn');
+  if (favBtn) {
+    const isFav = favorites.includes(word.id);
+    favBtn.querySelector('.icon').textContent = isFav ? '★' : '☆';
+    favBtn.classList.toggle('fav', isFav);
+  }
+
+  // Update tabs
+  document.querySelectorAll('.word-tab').forEach((t,i) => t.classList.toggle('active', i===currentWordIndex));
+  document.getElementById('word-counter').textContent = `${currentWordIndex+1} / ${VOCAB_DATA[currentLevel]?.length||15}`;
+}
+
+function jumpToWord(index) {
+  const words = VOCAB_DATA[currentLevel];
+  if (!words) return;
+  currentWordIndex = index;
+  renderWord(words[index]);
+}
+
+function prevWord() {
+  if (currentWordIndex > 0) {
+    currentWordIndex--;
+    renderWord(VOCAB_DATA[currentLevel][currentWordIndex]);
+  }
+}
+
+function nextWord() {
+  const words = VOCAB_DATA[currentLevel];
+  if (!words) return;
+  if (currentWordIndex < words.length - 1) {
+    currentWordIndex++;
+    renderWord(words[currentWordIndex]);
+  }
+}
+
+function speakWord() {
+  const word = document.getElementById('word-title').textContent;
+  if ('speechSynthesis' in window) {
+    const u = new SpeechSynthesisUtterance(word);
+    u.lang = 'en-US'; u.rate = 0.9;
+    speechSynthesis.speak(u);
+  }
+}
+
+function toggleFav(el) {
+  const words = VOCAB_DATA[currentLevel];
+  if (!words) return;
+  const word = words[currentWordIndex];
+  const idx = favorites.indexOf(word.id);
+  if (idx === -1) favorites.push(word.id);
+  else favorites.splice(idx, 1);
+  const favData = Storage.load('ling_favorites') || {};
+  favData.vocabulary = favorites;
+  Storage.save('ling_favorites', favData);
+  const favBtn = document.getElementById('fav-btn');
+  if (favBtn) {
+    const isFav = favorites.includes(word.id);
+    favBtn.querySelector('.icon').textContent = isFav ? '★' : '☆';
+    favBtn.classList.toggle('fav', isFav);
+  }
+}
+
+function addNote() { alert('📝 筆記功能開發中！'); }
+function addWrongbook() {
+  const words = VOCAB_DATA[currentLevel];
+  if (!words) return;
+  const word = words[currentWordIndex];
+  const wb = Storage.load('ling_wrongbook') || [];
+  const existing = wb.find(w => w.id === word.id);
+  if (existing) { existing.wrongCount++; existing.lastWrong = new Date().toISOString().split('T')[0]; }
+  else wb.push({id:word.id, type:'vocabulary', wrongCount:1, lastWrong:new Date().toISOString().split('T')[0]});
+  Storage.save('ling_wrongbook', wb);
+  alert('已加入錯題本！');
+}
+function shareWord() { alert('📤 分享功能開發中！'); }
+
+function startQuiz() {
+  window.location.href = `vocabulary-quiz.html?level=${currentLevel}`;
+}
+
+function unlockNext() {
+  const lp = Storage.load('ling_vocabulary_progress') || {};
+  if (!lp.levelProgress) lp.levelProgress = {};
+  lp.levelProgress[currentLevel] = { done: true, pct: 100 };
+  Storage.save('ling_vocabulary_progress', lp);
+  levelProgress = lp.levelProgress;
+  if (currentLevel < 100) loadLevel(currentLevel + 1);
+}
+
+function updateLevelFooter(level, words) {
+  const lp = levelProgress[level] || {};
+  document.getElementById('level-footer-title').textContent =
+    `Level ${level < 10 ? '0'+level : level} ${getLevelName(level)} ${lp.done ? '— 已完成 ✓' : ''}`;
+  document.getElementById('level-footer-bar').style.width = (lp.pct||0) + '%';
+  document.getElementById('level-footer-pct').textContent = (lp.accuracy||0) + '%';
+
+  const unlockBtn = document.getElementById('unlock-btn');
+  if (lp.done) {
+    unlockBtn.textContent = `✓ 已解鎖 Level ${level+1 < 10 ? '0'+(level+1) : level+1}`;
+    unlockBtn.style.opacity = '0.5';
+    unlockBtn.disabled = true;
+  } else {
+    unlockBtn.textContent = `🔓 解鎖 Level ${level+1 < 10 ? '0'+(level+1) : level+1}`;
+    unlockBtn.disabled = false;
+    unlockBtn.style.opacity = '1';
+  }
+
+  // Stats
+  const totalLearned = Object.keys(levelProgress).filter(k=>levelProgress[k].done).length * 15;
+  document.getElementById('stat-learned').textContent = totalLearned;
+  document.getElementById('stat-levels').textContent = `${Object.keys(levelProgress).filter(k=>levelProgress[k].done).length}/100`;
+  const avgAcc = Object.values(levelProgress).reduce((s,v)=>s+(v.accuracy||0),0) / Math.max(Object.keys(levelProgress).length,1);
+  document.getElementById('stat-acc').textContent = Math.round(avgAcc) + '%';
+  document.getElementById('total-progress').style.width = (totalLearned/1500*100) + '%';
+}
+
+function toggleSidebar2() {
+  const sb = document.getElementById('sidebar2');
+  const content = document.querySelector('.vocab-content');
+  const openBtn = document.getElementById('sidebar2-open');
+  const collapsed = sb.classList.toggle('collapsed');
+  content.classList.toggle('expanded', collapsed);
+  if (collapsed) {
+    openBtn.style.display = 'flex';
+  } else {
+    openBtn.style.display = 'none';
+  }
+}
+</script>
+</body>
+</html>

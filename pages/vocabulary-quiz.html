@@ -1,0 +1,318 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>單字測驗 — LING</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="../css/main.css">
+<style>
+.quiz-layout { display:flex; min-height:100vh; }
+.quiz-main { margin-left:var(--sidebar-w); flex:1; padding:32px; display:flex; flex-direction:column; align-items:center; justify-content:flex-start; }
+.quiz-container { width:100%; max-width:760px; }
+
+.quiz-header { margin-bottom:24px; }
+.quiz-header h2 { font-size:18px; font-weight:700; margin-bottom:4px; }
+.quiz-header p { font-size:13px; color:var(--text-muted); }
+
+.quiz-progress-bar { height:8px; background:rgba(255,255,255,0.08); border-radius:99px; margin-bottom:8px; overflow:hidden; }
+.quiz-progress-fill { height:100%; background:linear-gradient(90deg,var(--purple),var(--gold)); border-radius:99px; transition:width 0.4s ease; }
+.quiz-progress-label { display:flex; justify-content:space-between; font-size:12px; color:var(--text-muted); margin-bottom:24px; }
+
+.question-card { background:var(--bg-card); border:1px solid var(--border); border-radius:var(--radius); padding:36px; margin-bottom:20px; text-align:center; }
+.question-word { font-size:52px; font-weight:900; background:linear-gradient(135deg,#fff 30%,var(--gold)); -webkit-background-clip:text; -webkit-text-fill-color:transparent; margin-bottom:8px; }
+.question-phonetic { font-size:16px; color:var(--text-muted); margin-bottom:4px; display:flex; align-items:center; justify-content:center; gap:10px; }
+.btn-audio-sm { background:rgba(124,58,237,0.2); border:1px solid rgba(124,58,237,0.3); color:#A78BFA; padding:3px 10px; border-radius:99px; font-size:12px; cursor:pointer; }
+.question-hint { font-size:13px; color:var(--text-sec); margin-top:8px; }
+
+.options-grid { display:grid; grid-template-columns:1fr 1fr; gap:12px; margin-bottom:20px; }
+.option-btn {
+  background:var(--bg-card); border:1px solid var(--border);
+  border-radius:var(--radius-sm); padding:16px 20px;
+  font-size:15px; font-weight:500; color:var(--text);
+  cursor:pointer; text-align:left; transition:all 0.2s ease;
+  display:flex; align-items:center; gap:12px;
+}
+.option-btn:hover:not(:disabled) { background:rgba(124,58,237,0.15); border-color:rgba(124,58,237,0.4); }
+.option-btn.correct { background:rgba(16,185,129,0.15); border-color:var(--success); color:var(--success); }
+.option-btn.wrong { background:rgba(239,68,68,0.15); border-color:var(--danger); color:var(--danger); }
+.option-btn:disabled { cursor:not-allowed; }
+.option-label { width:28px; height:28px; border-radius:50%; background:rgba(255,255,255,0.08); display:flex; align-items:center; justify-content:center; font-size:13px; font-weight:700; flex-shrink:0; }
+.option-btn.correct .option-label { background:var(--success); color:white; }
+.option-btn.wrong .option-label { background:var(--danger); color:white; }
+
+.quiz-actions { display:flex; justify-content:space-between; align-items:center; }
+.uncertain-btn { background:rgba(255,255,255,0.06); border:1px solid var(--border); color:var(--text-muted); padding:10px 18px; border-radius:var(--radius-xs); font-size:13px; cursor:pointer; transition:all var(--transition); }
+.uncertain-btn:hover { color:var(--text); }
+.next-btn { background:linear-gradient(135deg,var(--purple),var(--purple-dark)); color:white; padding:10px 24px; border-radius:var(--radius-xs); font-size:14px; font-weight:700; border:none; cursor:pointer; transition:all var(--transition); }
+.next-btn:hover { opacity:0.85; }
+.next-btn:disabled { opacity:0.3; cursor:not-allowed; }
+
+/* Result Modal */
+.result-overlay { position:fixed; inset:0; background:rgba(0,0,0,0.7); display:flex; align-items:center; justify-content:center; z-index:999; backdrop-filter:blur(8px); opacity:0; pointer-events:none; transition:opacity 0.3s; }
+.result-overlay.show { opacity:1; pointer-events:all; }
+.result-card { background:linear-gradient(135deg,#1a0d30,#0d0820); border:1px solid rgba(246,196,83,0.3); border-radius:var(--radius); padding:40px; max-width:420px; width:90%; text-align:center; animation:fadeIn 0.4s ease; }
+.result-trophy { font-size:60px; margin-bottom:16px; }
+.result-title { font-size:24px; font-weight:800; color:var(--gold); margin-bottom:8px; }
+.result-score { font-size:64px; font-weight:900; background:linear-gradient(135deg,#fff,var(--gold)); -webkit-background-clip:text; -webkit-text-fill-color:transparent; line-height:1; }
+.result-sub { font-size:14px; color:var(--text-muted); margin-bottom:24px; }
+.result-stats { display:flex; justify-content:center; gap:32px; margin-bottom:24px; }
+.result-stat .val { font-size:24px; font-weight:700; }
+.result-stat .lbl { font-size:11px; color:var(--text-muted); }
+.result-stat.good .val { color:var(--success); }
+.result-stat.bad .val { color:var(--danger); }
+.result-stat.time .val { color:var(--purple-light); }
+.result-msg { font-size:14px; color:var(--text-sec); margin-bottom:20px; }
+.unlock-announce { background:rgba(246,196,83,0.1); border:1px solid rgba(246,196,83,0.3); border-radius:var(--radius-xs); padding:12px; font-size:13px; color:var(--gold); margin-bottom:20px; }
+.result-btns { display:flex; gap:10px; justify-content:center; flex-wrap:wrap; }
+.result-btns button { padding:10px 20px; border-radius:var(--radius-xs); font-size:13px; font-weight:600; cursor:pointer; border:none; }
+.btn-retry { background:var(--bg-card); border:1px solid var(--border)!important; border:none; color:var(--text); }
+.btn-unlock { background:linear-gradient(135deg,var(--gold),var(--gold-dark)); color:#1a1a1a; }
+.btn-next-level { background:linear-gradient(135deg,var(--purple),var(--purple-dark)); color:white; }
+</style>
+</head>
+<body>
+<div class="app-layout quiz-layout">
+<aside class="sidebar1" id="sidebar1">
+  <button class="sidebar1-collapse-btn" id="sidebar-collapse">‹</button>
+  <div class="sidebar1-logo"><div class="logo-icon">🏆</div><div class="logo-text"><h2>LING</h2><p>English Interactive Learning System</p></div></div>
+  <nav class="sidebar1-nav">
+    <a class="nav-item" href="../index.html"><span class="nav-icon">🏠</span><span class="nav-label">首頁總覽</span></a>
+    <a class="nav-item active" href="vocabulary.html"><span class="nav-icon">📖</span><span class="nav-label">單字學習</span></a>
+    <a class="nav-item" href="phrases.html"><span class="nav-icon">📝</span><span class="nav-label">片語學習</span></a>
+    <a class="nav-item" href="grammar.html"><span class="nav-icon">📚</span><span class="nav-label">文法學習</span></a>
+    <a class="nav-item" href="reading.html"><span class="nav-icon">📄</span><span class="nav-label">閱讀測驗</span></a>
+    <a class="nav-item" href="wrongbook.html"><span class="nav-icon">❌</span><span class="nav-label">錯題本</span></a>
+    <a class="nav-item" href="favorite.html"><span class="nav-icon">⭐</span><span class="nav-label">我的收藏</span></a>
+    <a class="nav-item" href="journal.html"><span class="nav-icon">📅</span><span class="nav-label">學習日誌</span></a>
+    <a class="nav-item" href="game.html"><span class="nav-icon">🎮</span><span class="nav-label">遊戲中心</span></a>
+    <a class="nav-item" href="settings.html"><span class="nav-icon">⚙️</span><span class="nav-label">設定</span></a>
+  </nav>
+  <div class="sidebar1-profile">
+    <div class="profile-avatar profile-avatar-img">翎</div>
+    <div class="profile-info"><h4><span class="profile-name">翎庭</span> <span class="lv-badge">Lv.1</span></h4><p>LING Student</p></div>
+  </div>
+</aside>
+
+<main class="quiz-main">
+<div class="quiz-container animate-fadeIn">
+  <div class="quiz-header">
+    <h2>📝 單字測驗 — <span id="quiz-level-title">Level 01 基礎入門 (1-15)</span></h2>
+    <p>測驗你的學習成果，檢視你的實力！</p>
+  </div>
+
+  <div class="quiz-progress-bar"><div class="quiz-progress-fill" id="quiz-bar" style="width:0%"></div></div>
+  <div class="quiz-progress-label">
+    <span>第 <span id="q-num">1</span> / <span id="q-total">15</span> 題</span>
+    <span id="q-pct">0%</span>
+  </div>
+
+  <div class="question-card">
+    <div class="question-word" id="q-word">ability</div>
+    <div class="question-phonetic">
+      <span id="q-phonetic">/əˈbɪləti/</span>
+      <button class="btn-audio-sm" onclick="speakCurrent()">🔊</button>
+    </div>
+    <div class="question-hint" id="q-hint"></div>
+  </div>
+
+  <div class="options-grid" id="options-grid"></div>
+
+  <div class="quiz-actions">
+    <button class="uncertain-btn" id="uncertain-btn" onclick="markUncertain()">📌 標記不確定</button>
+    <button class="next-btn" id="next-btn" onclick="nextQuestion()" disabled>下一題 →</button>
+  </div>
+</div>
+</main>
+</div>
+
+<!-- Result Modal -->
+<div class="result-overlay" id="result-overlay">
+  <div class="result-card">
+    <div class="result-trophy">🏆</div>
+    <div class="result-title">測驗完成！</div>
+    <div class="result-score" id="result-score">85%</div>
+    <div class="result-sub" id="result-sub">13 / 15 正確</div>
+    <div class="result-stats">
+      <div class="result-stat good"><div class="val" id="r-correct">13</div><div class="lbl">正確數</div></div>
+      <div class="result-stat bad"><div class="val" id="r-wrong">2</div><div class="lbl">錯誤數</div></div>
+      <div class="result-stat time"><div class="val" id="r-time">02:36</div><div class="lbl">總時間</div></div>
+    </div>
+    <div class="result-msg" id="result-msg">太棒了！繼續保持！</div>
+    <div class="unlock-announce" id="unlock-announce"></div>
+    <div class="result-btns">
+      <button class="btn-retry" onclick="retryQuiz()">🔄 查看錯題解析</button>
+      <button class="btn-next-level" id="btn-next-level" onclick="goNextLevel()">前往 Level 02 →</button>
+    </div>
+    <div style="margin-top:12px;display:flex;gap:12px;justify-content:center;">
+      <button class="btn-retry" onclick="window.location.href='vocabulary.html'">↩ 回到學習列表</button>
+    </div>
+  </div>
+</div>
+
+<script src="../js/app.js"></script>
+<script>
+const VOCAB_DATA = {
+  1:[
+    {id:"vocab_0001",word:"ability",chinese:"能力；才能",phonetic:"/əˈbɪləti/"},
+    {id:"vocab_0002",word:"accept",chinese:"接受；承認",phonetic:"/əkˈsɛpt/"},
+    {id:"vocab_0003",word:"achieve",chinese:"達成；實現",phonetic:"/əˈtʃiːv/"},
+    {id:"vocab_0004",word:"active",chinese:"積極的；活躍的",phonetic:"/ˈæktɪv/"},
+    {id:"vocab_0005",word:"activity",chinese:"活動；行動",phonetic:"/ækˈtɪvɪti/"},
+    {id:"vocab_0006",word:"add",chinese:"加；增加",phonetic:"/æd/"},
+    {id:"vocab_0007",word:"advice",chinese:"建議；忠告",phonetic:"/ədˈvaɪs/"},
+    {id:"vocab_0008",word:"affect",chinese:"影響；作用",phonetic:"/əˈfɛkt/"},
+    {id:"vocab_0009",word:"allow",chinese:"允許；讓",phonetic:"/əˈlaʊ/"},
+    {id:"vocab_0010",word:"amount",chinese:"數量；總額",phonetic:"/əˈmaʊnt/"},
+    {id:"vocab_0011",word:"answer",chinese:"答案；回答",phonetic:"/ˈænsər/"},
+    {id:"vocab_0012",word:"appear",chinese:"出現；似乎",phonetic:"/əˈpɪr/"},
+    {id:"vocab_0013",word:"area",chinese:"區域；面積",phonetic:"/ˈɛriə/"},
+    {id:"vocab_0014",word:"argue",chinese:"爭論；主張",phonetic:"/ˈɑːrɡjuː/"},
+    {id:"vocab_0015",word:"attention",chinese:"注意；關注",phonetic:"/əˈtɛnʃən/"}
+  ]
+};
+
+const params = new URLSearchParams(location.search);
+const level = parseInt(params.get('level')) || 1;
+let words = VOCAB_DATA[level] || VOCAB_DATA[1];
+let questions = [];
+let current = 0;
+let correct = 0;
+let wrong = 0;
+let startTime = Date.now();
+let answered = false;
+
+document.getElementById('quiz-level-title').textContent = `Level ${level < 10 ? '0'+level : level} 基礎入門 (1-15)`;
+document.getElementById('q-total').textContent = words.length;
+
+function generateQuestions() {
+  questions = words.map(w => {
+    const distractors = words.filter(x => x.id !== w.id).sort(()=>Math.random()-0.5).slice(0,3);
+    const opts = [...distractors.map(d=>d.chinese), w.chinese].sort(()=>Math.random()-0.5);
+    return { word: w.word, phonetic: w.phonetic, answer: w.chinese, options: opts };
+  });
+  questions.sort(()=>Math.random()-0.5);
+}
+
+function renderQuestion() {
+  answered = false;
+  const q = questions[current];
+  document.getElementById('q-word').textContent = q.word;
+  document.getElementById('q-phonetic').textContent = q.phonetic;
+  document.getElementById('q-num').textContent = current + 1;
+  const pct = Math.round((current / words.length) * 100);
+  document.getElementById('quiz-bar').style.width = pct + '%';
+  document.getElementById('q-pct').textContent = pct + '%';
+  document.getElementById('next-btn').disabled = true;
+
+  const labels = ['A','B','C','D'];
+  const grid = document.getElementById('options-grid');
+  grid.innerHTML = q.options.map((opt, i) => `
+    <button class="option-btn" onclick="selectOption(this,'${opt.replace(/'/g,"\\'")}')">
+      <span class="option-label">${labels[i]}</span>${opt}
+    </button>
+  `).join('');
+}
+
+function selectOption(btn, selected) {
+  if (answered) return;
+  answered = true;
+  const q = questions[current];
+  const isCorrect = selected === q.answer;
+  if (isCorrect) correct++; else wrong++;
+
+  document.querySelectorAll('.option-btn').forEach(b => {
+    const txt = b.textContent.slice(1);
+    if (txt === q.answer) b.classList.add('correct');
+    else if (b === btn && !isCorrect) b.classList.add('wrong');
+    b.disabled = true;
+  });
+
+  if (!isCorrect) {
+    const wb = Storage.load('ling_wrongbook') || [];
+    const ex = wb.find(w => w.word === q.word);
+    if (ex) { ex.wrongCount++; ex.lastWrong = new Date().toISOString().split('T')[0]; }
+    else wb.push({id:'vocab_'+q.word, word:q.word, type:'vocabulary', wrongCount:1, lastWrong:new Date().toISOString().split('T')[0]});
+    Storage.save('ling_wrongbook', wb);
+  }
+  document.getElementById('next-btn').disabled = false;
+}
+
+function nextQuestion() {
+  current++;
+  if (current >= questions.length) { showResult(); return; }
+  renderQuestion();
+}
+
+function markUncertain() {
+  const btn = document.getElementById('uncertain-btn');
+  btn.style.color = '#F6C453';
+  btn.textContent = '📌 已標記';
+}
+
+function speakCurrent() {
+  if ('speechSynthesis' in window) {
+    const u = new SpeechSynthesisUtterance(questions[current]?.word || '');
+    u.lang = 'en-US'; u.rate = 0.9; speechSynthesis.speak(u);
+  }
+}
+
+function showResult() {
+  const elapsed = Math.round((Date.now() - startTime) / 1000);
+  const mins = String(Math.floor(elapsed/60)).padStart(2,'0');
+  const secs = String(elapsed%60).padStart(2,'0');
+  const pct = Math.round(correct / words.length * 100);
+
+  document.getElementById('result-score').textContent = pct + '%';
+  document.getElementById('result-sub').textContent = `${correct} / ${words.length} 正確`;
+  document.getElementById('r-correct').textContent = correct;
+  document.getElementById('r-wrong').textContent = wrong;
+  document.getElementById('r-time').textContent = `${mins}:${secs}`;
+
+  const msgs = {90:'🎉 超強！你是單字王！', 70:'👍 太棒了！繼續保持！', 60:'📚 不錯！再加把勁！', 0:'💪 繼續練習，你可以的！'};
+  const msgKey = Object.keys(msgs).reverse().find(k => pct >= parseInt(k));
+  document.getElementById('result-msg').textContent = msgs[msgKey];
+
+  if (pct >= 60) {
+    const vp = Storage.load('ling_vocabulary_progress') || {};
+    if (!vp.levelProgress) vp.levelProgress = {};
+    vp.levelProgress[level] = { done: true, pct: 100, accuracy: pct };
+    if (!vp.accuracy) vp.accuracy = pct;
+    Storage.save('ling_vocabulary_progress', vp);
+    document.getElementById('unlock-announce').textContent = `🔓 恭喜解鎖 Level ${level+1}！繼續挑戰下一關！`;
+  } else {
+    document.getElementById('unlock-announce').textContent = `需要正確率 60% 以上才能解鎖下一關，再試一次吧！`;
+    document.getElementById('btn-next-level').style.opacity = '0.4';
+    document.getElementById('btn-next-level').disabled = true;
+  }
+
+  document.getElementById('result-overlay').classList.add('show');
+
+  // Save journal
+  const today = new Date().toISOString().split('T')[0];
+  const journal = Storage.load('ling_journal') || [];
+  const todayEntry = journal.find(j => j.date === today);
+  if (todayEntry) { todayEntry.vocabulary = (todayEntry.vocabulary||0) + words.length; todayEntry.accuracy = pct; }
+  else journal.push({ date: today, vocabulary: words.length, phrases: 0, reading: 0, accuracy: pct, studyTime: Math.round(elapsed/60) });
+  Storage.save('ling_journal', journal);
+}
+
+function retryQuiz() {
+  current = 0; correct = 0; wrong = 0; startTime = Date.now();
+  document.getElementById('result-overlay').classList.remove('show');
+  generateQuestions(); renderQuestion();
+}
+
+function goNextLevel() {
+  window.location.href = `vocabulary.html?level=${level+1}`;
+}
+
+document.addEventListener('DOMContentLoaded', () => {
+  App.init();
+  generateQuestions();
+  renderQuestion();
+});
+</script>
+</body>
+</html>

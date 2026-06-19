@@ -1,0 +1,243 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>閱讀測驗 — LING</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="../css/main.css">
+<style>
+.rcontent{margin-left:var(--sidebar-w);flex:1;display:flex;min-height:100vh}
+.sidebar2{width:280px;min-height:100vh;background:rgba(10,8,20,.97);border-right:1px solid var(--border);position:fixed;left:var(--sidebar-w);top:0;bottom:0;z-index:90;overflow-y:auto;transition:width .3s ease,transform .3s ease}
+.sidebar2.collapsed{width:0;overflow:hidden;border-right:none;transform:translateX(0)}
+.sidebar2-header{padding:20px 16px 14px;border-bottom:1px solid var(--border);position:sticky;top:0;background:rgba(10,8,20,.97);z-index:1;display:flex;align-items:flex-start;justify-content:space-between;white-space:nowrap;overflow:hidden}
+.sidebar2-header h2{font-size:16px;font-weight:700;margin-bottom:4px}
+.sidebar2-header p{font-size:12px;color:var(--text-muted)}
+.sidebar2-toggle{background:var(--purple);border:none;color:white;width:24px;height:24px;border-radius:50%;cursor:pointer;font-size:12px;display:flex;align-items:center;justify-content:center;flex-shrink:0;margin-top:2px}
+.article-list{padding:8px}
+.sidebar2-open-btn{position:fixed;top:50%;left:calc(var(--sidebar-w) + 0px);transform:translateY(-50%);background:var(--purple);border:none;color:white;width:20px;height:48px;border-radius:0 8px 8px 0;cursor:pointer;font-size:14px;z-index:200;display:none;align-items:center;justify-content:center;transition:left .3s ease}
+.art-item{padding:12px;border-radius:var(--radius-xs);cursor:pointer;margin-bottom:4px;transition:all var(--transition);border:1px solid transparent}
+.art-item:hover{background:var(--bg-card)}
+.art-item.active{background:linear-gradient(135deg,rgba(124,58,237,.25),rgba(91,33,182,.15));border-color:rgba(124,58,237,.3)}
+.art-item.done{border-color:rgba(16,185,129,.2)}
+.art-title{font-size:13px;font-weight:600;margin-bottom:4px}
+.art-meta{display:flex;gap:6px;align-items:center}
+.art-level{font-size:10px;padding:2px 6px;border-radius:99px;background:rgba(124,58,237,.2);color:#A78BFA;font-weight:700}
+.art-topic{font-size:10px;color:var(--text-muted)}
+.reading-main{margin-left:calc(var(--sidebar-w) + 280px);flex:1;padding:24px;transition:margin-left .3s ease;min-width:0}
+.reading-main.expanded{margin-left:calc(var(--sidebar-w) + 24px)}
+.reading-header{margin-bottom:20px}
+.reading-header h1{font-size:22px;font-weight:800;margin-bottom:4px}
+.article-card{background:var(--bg-card);border:1px solid var(--border);border-radius:var(--radius);padding:28px;margin-bottom:16px}
+.article-meta{display:flex;gap:8px;align-items:center;margin-bottom:16px}
+.article-meta .level-badge{padding:4px 10px;border-radius:99px;background:rgba(124,58,237,.2);color:#A78BFA;font-size:12px;font-weight:700}
+.article-meta .topic-badge{padding:4px 10px;border-radius:99px;background:rgba(16,185,129,.15);color:var(--success);font-size:12px;font-weight:700}
+.article-title{font-size:24px;font-weight:800;color:var(--gold);margin-bottom:16px}
+.article-body{font-size:15px;color:var(--text-sec);line-height:1.9;margin-bottom:20px}
+.vocab-hints{background:rgba(124,58,237,.06);border:1px solid rgba(124,58,237,.15);border-radius:var(--radius-xs);padding:14px;margin-bottom:16px}
+.vocab-hints h4{font-size:12px;color:var(--text-muted);font-weight:600;text-transform:uppercase;margin-bottom:10px}
+.vocab-hint-row{display:flex;flex-wrap:wrap;gap:8px}
+.vh-item{font-size:12px;color:var(--text-sec)}
+.vh-item strong{color:var(--gold)}
+.analysis-card{background:var(--bg-card);border:1px solid var(--border);border-radius:var(--radius);padding:24px;margin-bottom:16px;display:grid;grid-template-columns:1fr 1fr;gap:20px}
+.analysis-section h4{font-size:13px;font-weight:700;color:var(--text-sec);margin-bottom:12px;display:flex;align-items:center;gap:6px}
+.struct-flow{display:flex;flex-direction:column;gap:8px}
+.struct-item{display:flex;align-items:center;gap:8px}
+.struct-dot{width:8px;height:8px;border-radius:50%;background:var(--purple);flex-shrink:0}
+.struct-line{width:2px;height:16px;background:rgba(124,58,237,.3);margin-left:3px}
+.main-idea-box{background:rgba(246,196,83,.08);border:1px solid rgba(246,196,83,.2);border-radius:var(--radius-xs);padding:12px;font-size:14px;color:var(--text-sec);line-height:1.6}
+.reading-quiz{background:var(--bg-card);border:1px solid rgba(246,196,83,.2);border-radius:var(--radius);padding:24px;margin-bottom:16px}
+.reading-quiz h3{font-size:14px;font-weight:700;color:var(--gold);margin-bottom:16px}
+.rq-item{margin-bottom:20px}
+.rq-question{font-size:14px;font-weight:600;margin-bottom:10px}
+.rq-options{display:flex;flex-direction:column;gap:6px}
+.rq-opt{padding:10px 14px;border-radius:var(--radius-xs);background:rgba(255,255,255,.04);border:1px solid var(--border);font-size:13px;cursor:pointer;text-align:left;color:var(--text);transition:all var(--transition)}
+.rq-opt:hover:not(:disabled){background:rgba(124,58,237,.15);border-color:rgba(124,58,237,.4)}
+.rq-opt.correct{background:rgba(16,185,129,.15);border-color:var(--success);color:var(--success)}
+.rq-opt.wrong{background:rgba(239,68,68,.15);border-color:var(--danger);color:var(--danger)}
+.submit-reading{background:linear-gradient(135deg,var(--gold),var(--gold-dark));color:#1a1a1a;font-weight:700;padding:12px 28px;border-radius:var(--radius-xs);border:none;cursor:pointer;font-size:14px;margin-top:8px}
+</style>
+</head>
+<body>
+<div class="app-layout" style="display:flex">
+<aside class="sidebar1" id="sidebar1">
+  <button class="sidebar1-collapse-btn" id="sidebar-collapse">‹</button>
+  <div class="sidebar1-logo"><div class="logo-icon">🏆</div><div class="logo-text"><h2>LING</h2><p>English Interactive Learning System</p></div></div>
+  <nav class="sidebar1-nav">
+    <a class="nav-item" href="../index.html"><span class="nav-icon">🏠</span><span class="nav-label">首頁總覽</span></a>
+    <a class="nav-item" href="vocabulary.html"><span class="nav-icon">📖</span><span class="nav-label">單字學習</span></a>
+    <a class="nav-item" href="phrases.html"><span class="nav-icon">📝</span><span class="nav-label">片語學習</span></a>
+    <a class="nav-item" href="grammar.html"><span class="nav-icon">📚</span><span class="nav-label">文法學習</span></a>
+    <a class="nav-item active" href="reading.html"><span class="nav-icon">📄</span><span class="nav-label">閱讀測驗</span></a>
+    <a class="nav-item" href="wrongbook.html"><span class="nav-icon">❌</span><span class="nav-label">錯題本</span></a>
+    <a class="nav-item" href="favorite.html"><span class="nav-icon">⭐</span><span class="nav-label">我的收藏</span></a>
+    <a class="nav-item" href="journal.html"><span class="nav-icon">📅</span><span class="nav-label">學習日誌</span></a>
+    <a class="nav-item" href="game.html"><span class="nav-icon">🎮</span><span class="nav-label">遊戲中心</span></a>
+    <a class="nav-item" href="settings.html"><span class="nav-icon">⚙️</span><span class="nav-label">設定</span></a>
+  </nav>
+  <div class="sidebar1-profile">
+    <div class="profile-avatar profile-avatar-img">翎</div>
+    <div class="profile-info"><h4><span class="profile-name">翎庭</span> <span class="lv-badge">Lv.1</span></h4><p>LING Student</p></div>
+  </div>
+</aside>
+
+<aside class="sidebar2" id="sidebar2">
+  <div class="sidebar2-header">
+    <div><h2>📄 閱讀測驗</h2><p>100 篇文章，從 Level 1 到 Level 5</p></div>
+    <button class="sidebar2-toggle" onclick="toggleSidebar2()" title="收合">‹</button>
+  </div>
+  <div class="article-list" id="article-list"></div>
+</aside>
+<button class="sidebar2-open-btn" id="sidebar2-open" onclick="toggleSidebar2()" title="展開">›</button>
+
+<main class="reading-main animate-fadeIn">
+  <div id="reading-area"></div>
+  <div class="footer" style="margin-top:20px">Designed by CHIEN, HSIAO-CHUAN ｜ Ling English Interactive Learning System ｜ © All Rights Reserved</div>
+</main>
+</div>
+
+<script src="../js/app.js"></script>
+<script>
+const ARTICLES=[
+  {id:'r001',level:1,topic:'Health',title:'Healthy Breakfast',
+   article:`Starting your day with a healthy breakfast is one of the best habits you can build. Many students skip breakfast because they feel too busy or tired in the morning. However, research shows that eating breakfast helps improve concentration, memory, and academic performance.\n\nA good breakfast should include protein, carbohydrates, and healthy fats. Eggs, whole grain bread, fruit, and dairy products are all excellent choices. Avoid sugary cereals and processed foods that cause blood sugar to spike and crash.\n\nStudies from Taiwan and other Asian countries show that students who eat breakfast regularly score higher on tests and feel more energetic throughout the day. Making breakfast a priority, even a simple one, can make a significant difference in your learning ability.`,
+   vocab:[{word:'concentration',zh:'專注力'},{word:'academic',zh:'學術的'},{word:'protein',zh:'蛋白質'},{word:'carbohydrates',zh:'碳水化合物'},{word:'processed',zh:'加工的'}],
+   mainIdea:'Eating breakfast regularly improves students\' academic performance and overall energy levels.',
+   structure:['問題 — 許多學生不吃早餐','影響 — 對學習和體力的危害','解決方案 — 均衡早餐的選擇'],
+   questions:[
+     {q:'What is the main idea of this article?',opts:['Breakfast is the only important meal','Eating breakfast helps students learn better','All cereals are unhealthy','Students should wake up earlier'],ans:1},
+     {q:'According to the article, what should a good breakfast include?',opts:['Only fruit and water','Sugary cereals and juice','Protein, carbohydrates, and healthy fats','Processed foods and snacks'],ans:2},
+     {q:'What can we infer about students who skip breakfast?',opts:['They are healthier','They may perform worse academically','They save time for studying','They prefer lunch'],ans:1}
+   ]},
+  {id:'r002',level:1,topic:'Technology',title:'The Rise of Smartphones',
+   article:`Over the past two decades, smartphones have completely transformed the way people communicate, work, and entertain themselves. What started as a simple device for making calls has evolved into a powerful computer that fits in your pocket.\n\nToday, smartphones allow users to browse the internet, take high-quality photos, navigate using GPS, and access thousands of applications. Social media platforms, messaging apps, and video streaming services have made it possible to stay connected with people around the world at any time.\n\nHowever, smartphones also come with challenges. Excessive screen time has been linked to sleep problems, reduced attention spans, and social anxiety among young people. Finding a healthy balance between digital and real-world interactions is an important skill for the modern generation.`,
+   vocab:[{word:'transformed',zh:'改變了'},{word:'evolved',zh:'演化'},{word:'navigate',zh:'導航'},{word:'excessive',zh:'過度的'},{word:'generation',zh:'世代'}],
+   mainIdea:'Smartphones have revolutionized modern life but also created new challenges for users.',
+   structure:['現象 — 智慧型手機的崛起','功能 — 帶來的便利性','問題 — 過度使用的負面影響'],
+   questions:[
+     {q:'How have smartphones changed over time?',opts:['They became smaller only','They evolved from simple phones to powerful computers','They replaced all other technology','They became more expensive'],ans:1},
+     {q:'Which problem is mentioned regarding smartphone use?',opts:['Poor camera quality','High cost','Sleep problems and reduced attention spans','Slow internet speed'],ans:2},
+     {q:'What skill does the article suggest is important?',opts:['Learning to code apps','Balancing digital and real-world interactions','Using more social media','Buying better smartphones'],ans:1}
+   ]}
+];
+
+let currentArticle=0;
+let quizAnswers={};
+let quizSubmitted=false;
+
+document.addEventListener('DOMContentLoaded',()=>{App.init();renderArticleList();renderArticle(0);});
+
+function toggleSidebar2(){
+  const sb=document.getElementById('sidebar2');
+  const main=document.querySelector('.reading-main');
+  const openBtn=document.getElementById('sidebar2-open');
+  const collapsed=sb.classList.toggle('collapsed');
+  main.classList.toggle('expanded', collapsed);
+  if(collapsed){
+    openBtn.style.display='flex';
+    // 收合後 open btn 緊貼 sidebar1 右邊
+    openBtn.style.left='calc(var(--sidebar-w))';
+  } else {
+    openBtn.style.display='none';
+  }
+}
+
+function renderArticleList(){
+  const rp=Storage.load('ling_reading_progress')||{};
+  const list=document.getElementById('article-list');
+  list.innerHTML=ARTICLES.map((a,i)=>`
+    <div class="art-item ${i===currentArticle?'active':''} ${rp[a.id]?.done?'done':''}" onclick="loadArticle(${i})">
+      <div class="art-title">${a.title}${rp[a.id]?.done?' ✓':''}</div>
+      <div class="art-meta">
+        <span class="art-level">Level ${a.level}</span>
+        <span class="art-topic">${a.topic}</span>
+      </div>
+    </div>`).join('');
+  for(let i=ARTICLES.length+1;i<=10;i++){
+    list.innerHTML+=`<div class="art-item locked" style="opacity:.3">
+      <div class="art-title">Article ${i} 🔒</div>
+      <div class="art-meta"><span class="art-level">Level ${Math.ceil(i/2)}</span></div>
+    </div>`;
+  }
+}
+
+function loadArticle(i){currentArticle=i;quizAnswers={};quizSubmitted=false;renderArticleList();renderArticle(i);}
+
+function renderArticle(i){
+  const a=ARTICLES[i];
+  const area=document.getElementById('reading-area');
+  area.innerHTML=`
+    <div class="article-card">
+      <div class="article-meta">
+        <span class="level-badge">Level ${a.level}</span>
+        <span class="topic-badge">${a.topic}</span>
+      </div>
+      <div class="article-title">${a.title}</div>
+      <div class="article-body">${a.article.replace(/\n\n/g,'</p><p style="margin-top:16px">').replace(/^/,'<p>').replace(/$/,'</p>')}</div>
+      <div class="vocab-hints">
+        <h4>📖 字彙提示</h4>
+        <div class="vocab-hint-row">${a.vocab.map(v=>`<span class="vh-item"><strong>${v.word}</strong> = ${v.zh}</span>`).join('<span style="color:var(--border)">｜</span>')}</div>
+      </div>
+    </div>
+
+    <div class="analysis-card">
+      <div class="analysis-section">
+        <h4>🧱 文章結構分析</h4>
+        <div class="struct-flow">${a.structure.map((s,si)=>`
+          <div class="struct-item"><div class="struct-dot"></div><span style="font-size:13px;color:var(--text-sec)">${s}</span></div>
+          ${si<a.structure.length-1?'<div class="struct-line" style="margin-left:3px"></div>':''}`).join('')}
+        </div>
+      </div>
+      <div class="analysis-section">
+        <h4>💡 主旨大意</h4>
+        <div class="main-idea-box">${a.mainIdea}</div>
+      </div>
+    </div>
+
+    <div class="reading-quiz">
+      <h3>🎯 閱讀測驗（3題）</h3>
+      ${a.questions.map((q,qi)=>`
+        <div class="rq-item">
+          <div class="rq-question">Q${qi+1}. ${q.q}</div>
+          <div class="rq-options">
+            ${q.opts.map((opt,oi)=>`<button class="rq-opt" id="q${qi}o${oi}" onclick="selectOpt(${qi},${oi},${q.ans})">${String.fromCharCode(65+oi)}. ${opt}</button>`).join('')}
+          </div>
+        </div>`).join('')}
+      <button class="submit-reading" onclick="submitReading()">提交答案</button>
+    </div>`;
+}
+
+function selectOpt(qi,oi,ans){
+  if(quizSubmitted)return;
+  quizAnswers[qi]=oi;
+  const opts=document.querySelectorAll(`[id^="q${qi}o"]`);
+  opts.forEach((o,i)=>o.style.borderColor=i===oi?'rgba(124,58,237,.5)':'');
+}
+
+function submitReading(){
+  if(quizSubmitted)return;
+  const a=ARTICLES[currentArticle];
+  let correct=0;
+  a.questions.forEach((q,qi)=>{
+    const selected=quizAnswers[qi];
+    if(selected===undefined)return;
+    const opts=document.querySelectorAll(`[id^="q${qi}o"]`);
+    opts.forEach((o,oi)=>{
+      if(oi===q.ans)o.classList.add('correct');
+      else if(oi===selected&&selected!==q.ans)o.classList.add('wrong');
+      o.disabled=true;
+    });
+    if(selected===q.ans)correct++;
+  });
+  quizSubmitted=true;
+  const pct=Math.round(correct/a.questions.length*100);
+  const rp=Storage.load('ling_reading_progress')||{};
+  rp[a.id]={done:true,accuracy:pct,date:new Date().toISOString().split('T')[0]};
+  Storage.save('ling_reading_progress',rp);
+  renderArticleList();
+  alert(`📖 閱讀完成！正確率：${pct}%（${correct}/${a.questions.length} 題正確）`);
+}
+</script>
+</body>
+</html>

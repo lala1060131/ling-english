@@ -1,0 +1,174 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>學習日誌 — LING</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="../css/main.css">
+<style>
+.jcontent{margin-left:var(--sidebar-w);flex:1;padding:28px;max-width:1100px}
+.jheader{display:flex;align-items:center;justify-content:space-between;margin-bottom:24px}
+.jheader h1{font-size:22px;font-weight:800}
+.jtabs{display:flex;gap:4px;background:var(--bg-card);border:1px solid var(--border);border-radius:var(--radius-xs);padding:4px}
+.jtab{padding:7px 18px;border-radius:6px;font-size:13px;font-weight:500;cursor:pointer;color:var(--text-muted);transition:all var(--transition)}
+.jtab.active{background:linear-gradient(135deg,var(--purple),var(--purple-dark));color:white}
+.stats-row{display:grid;grid-template-columns:repeat(4,1fr);gap:16px;margin-bottom:20px}
+.stat-card{background:var(--bg-card);border:1px solid var(--border);border-radius:var(--radius-sm);padding:16px;text-align:center}
+.stat-card .val{font-size:28px;font-weight:800;background:linear-gradient(135deg,#fff,var(--gold));-webkit-background-clip:text;-webkit-text-fill-color:transparent}
+.stat-card .lbl{font-size:11px;color:var(--text-muted);margin-top:2px}
+.chart-card{background:var(--bg-card);border:1px solid var(--border);border-radius:var(--radius);padding:20px;margin-bottom:16px}
+.chart-card h3{font-size:13px;font-weight:600;color:var(--text-sec);text-transform:uppercase;letter-spacing:.5px;margin-bottom:16px}
+.journal-table{width:100%;border-collapse:collapse}
+.journal-table th{font-size:11px;color:var(--text-muted);text-transform:uppercase;letter-spacing:.5px;padding:10px 12px;text-align:left;border-bottom:1px solid var(--border)}
+.journal-table td{padding:12px;font-size:13px;border-bottom:1px solid rgba(255,255,255,.04)}
+.journal-table tr:hover td{background:rgba(255,255,255,.03)}
+.acc-badge{display:inline-block;padding:2px 8px;border-radius:99px;font-size:11px;font-weight:600}
+.acc-high{background:rgba(16,185,129,.15);color:var(--success)}
+.acc-mid{background:rgba(246,196,83,.15);color:var(--gold)}
+.acc-low{background:rgba(239,68,68,.15);color:var(--danger)}
+.empty-state{text-align:center;padding:48px;color:var(--text-muted)}
+.empty-state .icon{font-size:48px;margin-bottom:12px}
+.empty-state p{font-size:14px}
+</style>
+</head>
+<body>
+<div class="app-layout" style="display:flex">
+<aside class="sidebar1" id="sidebar1">
+  <button class="sidebar1-collapse-btn" id="sidebar-collapse">‹</button>
+  <div class="sidebar1-logo"><div class="logo-icon">🏆</div><div class="logo-text"><h2>LING</h2><p>English Interactive Learning System</p></div></div>
+  <nav class="sidebar1-nav">
+    <a class="nav-item" href="../index.html"><span class="nav-icon">🏠</span><span class="nav-label">首頁總覽</span></a>
+    <a class="nav-item" href="vocabulary.html"><span class="nav-icon">📖</span><span class="nav-label">單字學習</span></a>
+    <a class="nav-item" href="phrases.html"><span class="nav-icon">📝</span><span class="nav-label">片語學習</span></a>
+    <a class="nav-item" href="grammar.html"><span class="nav-icon">📚</span><span class="nav-label">文法學習</span></a>
+    <a class="nav-item" href="reading.html"><span class="nav-icon">📄</span><span class="nav-label">閱讀測驗</span></a>
+    <a class="nav-item" href="wrongbook.html"><span class="nav-icon">❌</span><span class="nav-label">錯題本</span></a>
+    <a class="nav-item" href="favorite.html"><span class="nav-icon">⭐</span><span class="nav-label">我的收藏</span></a>
+    <a class="nav-item active" href="journal.html"><span class="nav-icon">📅</span><span class="nav-label">學習日誌</span></a>
+    <a class="nav-item" href="game.html"><span class="nav-icon">🎮</span><span class="nav-label">遊戲中心</span></a>
+    <a class="nav-item" href="settings.html"><span class="nav-icon">⚙️</span><span class="nav-label">設定</span></a>
+  </nav>
+  <div class="sidebar1-profile">
+    <div class="profile-avatar profile-avatar-img">翎</div>
+    <div class="profile-info"><h4><span class="profile-name">翎庭</span> <span class="lv-badge">Lv.1</span></h4><p>LING Student</p></div>
+  </div>
+</aside>
+
+<main class="jcontent animate-fadeIn">
+  <div class="jheader">
+    <h1>📅 學習日誌</h1>
+    <div class="jtabs">
+      <div class="jtab active" onclick="switchTab(this,'week')">本週</div>
+      <div class="jtab" onclick="switchTab(this,'month')">本月</div>
+      <div class="jtab" onclick="switchTab(this,'all')">全部</div>
+    </div>
+  </div>
+
+  <div class="stats-row">
+    <div class="stat-card"><div class="val" id="j-days">0</div><div class="lbl">連續學習天數</div></div>
+    <div class="stat-card"><div class="val" id="j-total-words">0</div><div class="lbl">累計學習單字</div></div>
+    <div class="stat-card"><div class="val" id="j-avg-acc">0%</div><div class="lbl">平均正確率</div></div>
+    <div class="stat-card"><div class="val" id="j-total-time">0h</div><div class="lbl">累計學習時間</div></div>
+  </div>
+
+  <div class="chart-card">
+    <h3>📈 正確率趨勢</h3>
+    <canvas id="acc-chart" height="60"></canvas>
+  </div>
+
+  <div class="chart-card">
+    <h3>⏱ 學習時間趨勢（分鐘）</h3>
+    <canvas id="time-chart" height="60"></canvas>
+  </div>
+
+  <div class="card" style="padding:20px">
+    <h3 style="font-size:13px;font-weight:600;color:var(--text-sec);text-transform:uppercase;letter-spacing:.5px;margin-bottom:16px">📋 每日學習紀錄</h3>
+    <div id="journal-table-wrap"></div>
+  </div>
+
+  <div class="footer" style="margin-top:20px">Designed by CHIEN, HSIAO-CHUAN ｜ Ling English Interactive Learning System ｜ © All Rights Reserved</div>
+</main>
+</div>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.0/chart.umd.min.js"></script>
+<script src="../js/app.js"></script>
+<script>
+let currentTab='week';
+let accChart=null, timeChart=null;
+
+document.addEventListener('DOMContentLoaded',()=>{
+  App.init();
+  renderJournal();
+});
+
+function switchTab(el,tab){
+  document.querySelectorAll('.jtab').forEach(t=>t.classList.remove('active'));
+  el.classList.add('active');
+  currentTab=tab;
+  renderJournal();
+}
+
+function getFilteredJournal(){
+  const journal=Storage.load('ling_journal')||[];
+  const now=new Date();
+  if(currentTab==='week'){
+    const weekAgo=new Date(now);weekAgo.setDate(weekAgo.getDate()-7);
+    return journal.filter(j=>new Date(j.date)>=weekAgo);
+  } else if(currentTab==='month'){
+    const monthAgo=new Date(now);monthAgo.setDate(monthAgo.getDate()-30);
+    return journal.filter(j=>new Date(j.date)>=monthAgo);
+  }
+  return journal;
+}
+
+function renderJournal(){
+  const data=getFilteredJournal().sort((a,b)=>new Date(b.date)-new Date(a.date));
+  const allJournal=Storage.load('ling_journal')||[];
+
+  // Stats
+  const streak=Storage.load('ling_streak')||0;
+  document.getElementById('j-days').textContent=streak;
+  const totalWords=allJournal.reduce((s,j)=>s+(j.vocabulary||0),0);
+  document.getElementById('j-total-words').textContent=totalWords;
+  const avgAcc=allJournal.length?Math.round(allJournal.reduce((s,j)=>s+(j.accuracy||0),0)/allJournal.length):0;
+  document.getElementById('j-avg-acc').textContent=avgAcc+'%';
+  const totalMins=allJournal.reduce((s,j)=>s+(j.studyTime||0),0);
+  document.getElementById('j-total-time').textContent=(totalMins/60).toFixed(1)+'h';
+
+  // Charts
+  const labels=data.slice(0,14).reverse().map(j=>j.date.slice(5));
+  const accData=data.slice(0,14).reverse().map(j=>j.accuracy||0);
+  const timeData=data.slice(0,14).reverse().map(j=>j.studyTime||0);
+
+  const chartOpts={responsive:true,plugins:{legend:{display:false}},scales:{x:{grid:{color:'rgba(255,255,255,0.05)'},ticks:{color:'#71717A',font:{size:11}}},y:{grid:{color:'rgba(255,255,255,0.05)'},ticks:{color:'#71717A',font:{size:11}}}}};
+
+  if(accChart)accChart.destroy();
+  accChart=new Chart(document.getElementById('acc-chart'),{type:'line',data:{labels,datasets:[{data:accData,borderColor:'#7C3AED',backgroundColor:'rgba(124,58,237,0.1)',fill:true,tension:0.4,pointBackgroundColor:'#F6C453',pointRadius:4}]},options:{...chartOpts,scales:{...chartOpts.scales,y:{...chartOpts.scales.y,min:0,max:100}}}});
+
+  if(timeChart)timeChart.destroy();
+  timeChart=new Chart(document.getElementById('time-chart'),{type:'bar',data:{labels,datasets:[{data:timeData,backgroundColor:'rgba(124,58,237,0.4)',borderColor:'#7C3AED',borderWidth:1,borderRadius:4}]},options:chartOpts});
+
+  // Table
+  const wrap=document.getElementById('journal-table-wrap');
+  if(!data.length){wrap.innerHTML='<div class="empty-state"><div class="icon">📅</div><p>還沒有學習記錄，開始學習後會自動記錄！</p></div>';return;}
+  wrap.innerHTML=`<table class="journal-table">
+    <thead><tr><th>日期</th><th>單字</th><th>片語</th><th>閱讀</th><th>正確率</th><th>學習時間</th></tr></thead>
+    <tbody>${data.map(j=>{
+      const acc=j.accuracy||0;
+      const cls=acc>=80?'acc-high':acc>=60?'acc-mid':'acc-low';
+      return `<tr>
+        <td>${j.date}</td>
+        <td>${j.vocabulary||0} 個</td>
+        <td>${j.phrases||0} 個</td>
+        <td>${j.reading||0} 篇</td>
+        <td><span class="acc-badge ${cls}">${acc}%</span></td>
+        <td>${j.studyTime||0} 分鐘</td>
+      </tr>`;
+    }).join('')}</tbody>
+  </table>`;
+}
+</script>
+</body>
+</html>
