@@ -343,7 +343,6 @@ let currentLevel=1, currentIdx=0;
 let favorites = Storage.load('ling_favorites')?.phrases || [];
 
 document.addEventListener('DOMContentLoaded',()=>{
-  App.init();
   renderLevelList();
   loadLevel(1);
 });
