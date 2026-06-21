@@ -631,7 +631,7 @@ document.addEventListener('DOMContentLoaded',()=>{
 });
 
 function renderLevelList(){
-  const lp = levelProgress;
+  const lp = (Storage.load('ling_phrase_progress') || {}).levelProgress || {};
   const list = document.getElementById('level-list');
   list.innerHTML='';
   for(let i=1;i<=60;i++){
