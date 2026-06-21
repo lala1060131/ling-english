@@ -827,7 +827,7 @@ function prevPhrase(){if(currentIdx>0){currentIdx--;renderPhrase(PHRASES[current
 function nextPhrase(){const ps=PHRASES[currentLevel];if(ps&&currentIdx<ps.length-1){currentIdx++;renderPhrase(ps[currentIdx]);}}
 function speakPhrase(){var w=document.getElementById('p-phrase').textContent.trim();if(!w)return;try{speechSynthesis.cancel();}catch(e){}var u=new SpeechSynthesisUtterance(w);u.lang='en-US';u.rate=.9;if(speechSynthesis.getVoices().length===0){speechSynthesis.onvoiceschanged=function(){speechSynthesis.speak(u);};}else{speechSynthesis.speak(u);}}
 function toggleFav(){const ps=PHRASES[currentLevel];if(!ps)return;const p=ps[currentIdx];const idx=favorites.indexOf(p.id);if(idx===-1)favorites.push(p.id);else favorites.splice(idx,1);const fd=Storage.load('ling_favorites')||{};fd.phrases=favorites;Storage.save('ling_favorites',fd);renderPhrase(p);}
-function addToWrong(){const ps=PHRASES[currentLevel];if(!ps)return;const p=ps[currentIdx];const wd=Storage.load('ling_wrongbook')||{phrases:[]};if(!wd.phrases.find(x=>x.id===p.id)){wd.phrases.push({id:p.id,phrase:p.phrase,chinese:p.chinese,level:currentLevel,addedAt:Date.now()});Storage.save('ling_wrongbook',wd);}showToast('已加入錯題本 📚');}
+function addToWrong(){const ps=PHRASES[currentLevel];if(!ps)return;const p=ps[currentIdx];const wb=Storage.load('ling_wrongbook')||[];const ex=wb.find(x=>x.id===p.id);if(ex){ex.wrongCount=(ex.wrongCount||0)+1;ex.lastWrong=new Date().toLocaleDateString('zh-TW');}else{wb.push({id:p.id,word:p.phrase,chinese:p.chinese,type:'phrase',level:currentLevel,wrongCount:1,lastWrong:new Date().toLocaleDateString('zh-TW')});}Storage.save('ling_wrongbook',wb);showToast('已加入錯題本 📚');}
 
 function showNote(){const ps=PHRASES[currentLevel];if(!ps)return;const p=ps[currentIdx];const nd=Storage.load('ling_notes')||{};const existing=nd[p.id]||'';const note=prompt('📝 輸入筆記（'+p.phrase+'）:',existing);if(note!==null){nd[p.id]=note;Storage.save('ling_notes',nd);showToast('筆記已儲存 ✅');}}
 
@@ -879,12 +879,11 @@ function answerQuiz(btn){
     ?'<span style="color:#10b981;font-weight:700">✅ 答對了！太棒了！</span>'
     :'<span style="color:#ef4444;font-weight:700">❌ 答錯囉，已加入錯題本 📚</span>';
   if(!correct && q){
-    const wd=Storage.load('ling_wrongbook')||{};
-    if(!wd.phrases)wd.phrases=[];
-    if(!wd.phrases.find(x=>x.id===q.id)){
-      wd.phrases.push({id:q.id,phrase:q.phrase,chinese:q.chinese,level:currentLevel,addedAt:Date.now()});
-      Storage.save('ling_wrongbook',wd);
-    }
+    const wb=Storage.load('ling_wrongbook')||[];
+    const existing=wb.find(x=>x.id===q.id);
+    if(existing){existing.wrongCount=(existing.wrongCount||0)+1;existing.lastWrong=new Date().toLocaleDateString('zh-TW');}
+    else{wb.push({id:q.id,word:q.phrase,chinese:q.chinese,type:'phrase',level:currentLevel,wrongCount:1,lastWrong:new Date().toLocaleDateString('zh-TW')});}
+    Storage.save('ling_wrongbook',wb);
   }
   document.getElementById('next-quiz-btn').style.display='block';
 }
