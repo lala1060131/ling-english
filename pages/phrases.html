@@ -692,30 +692,42 @@ function showNote(){const ps=PHRASES[currentLevel];if(!ps)return;const p=ps[curr
 
 function showToast(msg){let t=document.getElementById('toast-msg');if(!t){t=document.createElement('div');t.id='toast-msg';t.style.cssText='position:fixed;bottom:24px;left:50%;transform:translateX(-50%);background:rgba(124,58,237,.95);color:white;padding:10px 22px;border-radius:99px;font-size:13px;font-weight:600;z-index:9999;transition:opacity .4s';document.body.appendChild(t);}t.textContent=msg;t.style.opacity='1';clearTimeout(t._timer);t._timer=setTimeout(()=>t.style.opacity='0',2000);}
 
+let quizQueue=[], quizDoneCount=0, quizTotalCount=0;
+
 function startQuiz(){
   const ps=PHRASES[currentLevel];if(!ps)return;
+  quizQueue=[...ps].sort(()=>Math.random()-.5);
+  quizDoneCount=0;
+  quizTotalCount=ps.length;
+  showNextQuiz();
+}
+
+function showNextQuiz(){
+  if(quizQueue.length===0){
+    const overlay=document.createElement('div');
+    overlay.id='quiz-overlay';
+    overlay.style.cssText='position:fixed;inset:0;background:rgba(0,0,0,.85);z-index:1000;display:flex;align-items:center;justify-content:center;padding:20px';
+    overlay.innerHTML='<div style="background:#1a1530;border:1px solid rgba(124,58,237,.3);border-radius:16px;padding:32px;max-width:480px;width:100%;text-align:center"><div style="font-size:48px;margin-bottom:12px">🎉</div><div style="font-size:22px;font-weight:800;color:var(--gold);margin-bottom:8px">Level '+currentLevel+' 全部考完！</div><div style="font-size:14px;color:var(--text-muted);margin-bottom:24px">共 '+quizTotalCount+' 題，答錯的已加入錯題本 📚</div><div style="display:flex;gap:10px"><button onclick="document.getElementById(\'quiz-overlay\').remove()" style="flex:1;background:rgba(255,255,255,.08);border:1px solid var(--border);color:var(--text);padding:10px;border-radius:8px;cursor:pointer">關閉</button><button onclick="document.getElementById(\'quiz-overlay\').remove();startQuiz()" style="flex:1;background:linear-gradient(135deg,var(--purple),var(--purple-dark));border:none;color:white;padding:10px;border-radius:8px;cursor:pointer;font-weight:600">再練一次 →</button></div></div>';
+    document.body.appendChild(overlay);
+    return;
+  }
   const allPhrases=Object.values(PHRASES).flat();
-  const q=ps[Math.floor(Math.random()*ps.length)];
+  const q=quizQueue.shift();
+  quizDoneCount++;
   const wrongs=allPhrases.filter(p=>p.id!==q.id).sort(()=>Math.random()-.5).slice(0,3);
   const opts=[q,...wrongs].sort(()=>Math.random()-.5);
   const overlay=document.createElement('div');
   overlay.id='quiz-overlay';
   overlay.style.cssText='position:fixed;inset:0;background:rgba(0,0,0,.85);z-index:1000;display:flex;align-items:center;justify-content:center;padding:20px';
-  const btns=opts.map(o=>`<button data-correct="${o.id===q.id}" onclick="answerQuiz(this,'${q.id}')" style="background:rgba(255,255,255,.05);border:1px solid rgba(255,255,255,.1);color:var(--text);padding:12px 16px;border-radius:10px;font-size:14px;cursor:pointer;text-align:left;transition:all .2s;width:100%">${o.chinese}</button>`).join('');
-  overlay.innerHTML=`<div style="background:#1a1530;border:1px solid rgba(124,58,237,.3);border-radius:16px;padding:32px;max-width:480px;width:100%">
-<div style="font-size:12px;color:var(--text-muted);margin-bottom:8px">📝 Level ${currentLevel} 片語測驗</div>
-<div style="font-size:26px;font-weight:900;margin-bottom:6px;background:linear-gradient(135deg,#fff 30%,var(--gold));-webkit-background-clip:text;-webkit-text-fill-color:transparent">${q.phrase}</div>
-<div style="font-size:14px;color:var(--text-muted);margin-bottom:20px">這個片語是什麼意思？</div>
-<div style="display:grid;gap:10px">${btns}</div>
-<div id="quiz-result" style="margin-top:16px;font-size:14px;min-height:36px"></div>
-<div style="display:flex;gap:10px;margin-top:16px">
-<button onclick="document.getElementById('quiz-overlay').remove()" style="flex:1;background:rgba(255,255,255,.08);border:1px solid var(--border);color:var(--text);padding:10px;border-radius:8px;cursor:pointer">關閉</button>
-<button onclick="document.getElementById('quiz-overlay').remove();startQuiz()" style="flex:1;background:linear-gradient(135deg,var(--purple),var(--purple-dark));border:none;color:white;padding:10px;border-radius:8px;cursor:pointer;font-weight:600">再一題 →</button>
-</div></div>`;
+  const btns=opts.map(o=>'<button data-correct="'+(o.id===q.id)+'" onclick="answerQuiz(this)" style="background:rgba(255,255,255,.05);border:1px solid rgba(255,255,255,.1);color:var(--text);padding:12px 16px;border-radius:10px;font-size:14px;cursor:pointer;text-align:left;transition:all .2s;width:100%">'+o.chinese+'</button>').join('');
+  overlay.innerHTML='<div style="background:#1a1530;border:1px solid rgba(124,58,237,.3);border-radius:16px;padding:32px;max-width:480px;width:100%"><div style="font-size:12px;color:var(--text-muted);margin-bottom:8px">📝 Level '+currentLevel+' 片語測驗 '+quizDoneCount+'/'+quizTotalCount+'</div><div style="font-size:26px;font-weight:900;margin-bottom:6px;background:linear-gradient(135deg,#fff 30%,var(--gold));-webkit-background-clip:text;-webkit-text-fill-color:transparent">'+q.phrase+'</div><div style="font-size:14px;color:var(--text-muted);margin-bottom:20px">這個片語是什麼意思？</div><div style="display:grid;gap:10px">'+btns+'</div><div id="quiz-result" style="margin-top:16px;font-size:14px;min-height:36px"></div><div style="display:flex;gap:10px;margin-top:16px"><button onclick="document.getElementById(\'quiz-overlay\').remove()" style="flex:1;background:rgba(255,255,255,.08);border:1px solid var(--border);color:var(--text);padding:10px;border-radius:8px;cursor:pointer">中止測驗</button><button id="next-quiz-btn" onclick="document.getElementById(\'quiz-overlay\').remove();showNextQuiz()" style="flex:1;background:linear-gradient(135deg,var(--purple),var(--purple-dark));border:none;color:white;padding:10px;border-radius:8px;cursor:pointer;font-weight:600;display:none">下一題 →</button></div></div>';
   document.body.appendChild(overlay);
+  overlay._currentQ=q;
 }
 
-function answerQuiz(btn,correctId){
+function answerQuiz(btn){
+  const overlay=document.getElementById('quiz-overlay');
+  const q=overlay._currentQ;
   document.querySelectorAll('#quiz-overlay button[data-correct]').forEach(b=>{
     b.style.pointerEvents='none';
     if(b.dataset.correct==='true'){b.style.background='rgba(16,185,129,.25)';b.style.borderColor='#10b981';b.style.color='#10b981';}
@@ -724,8 +736,18 @@ function answerQuiz(btn,correctId){
   const correct=btn.dataset.correct==='true';
   document.getElementById('quiz-result').innerHTML=correct
     ?'<span style="color:#10b981;font-weight:700">✅ 答對了！太棒了！</span>'
-    :'<span style="color:#ef4444;font-weight:700">❌ 答錯囉，再加油！</span>';
+    :'<span style="color:#ef4444;font-weight:700">❌ 答錯囉，已加入錯題本 📚</span>';
+  if(!correct && q){
+    const wd=Storage.load('ling_wrongbook')||{};
+    if(!wd.phrases)wd.phrases=[];
+    if(!wd.phrases.find(x=>x.id===q.id)){
+      wd.phrases.push({id:q.id,phrase:q.phrase,chinese:q.chinese,level:currentLevel,addedAt:Date.now()});
+      Storage.save('ling_wrongbook',wd);
+    }
+  }
+  document.getElementById('next-quiz-btn').style.display='block';
 }
+
 function unlockNext(){const vp=Storage.load('ling_phrase_progress')||{};if(!vp.levelProgress)vp.levelProgress={};vp.levelProgress[currentLevel]={done:true,pct:100};Storage.save('ling_phrase_progress',vp);if(currentLevel<60)loadLevel(currentLevel+1);}
 function toggleSidebar2(){
   const sb=document.getElementById('sidebar2');
