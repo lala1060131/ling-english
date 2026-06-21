@@ -186,7 +186,7 @@
     <div class="level-footer-right">
       <div class="pct" id="lf-pct">0%</div>
       <p>本關正確率</p>
-      <button class="btn btn-gold" style="margin-top:8px;font-size:12px" onclick="unlockNext()">🔓 解鎖 Level 02</button>
+      
     </div>
   </div>
   <div class="footer" style="margin-top:20px">Designed by CHIEN, HSIAO-CHUAN ｜ Ling English Interactive Learning System ｜ © All Rights Reserved</div>
@@ -636,7 +636,7 @@ function renderLevelList(){
   list.innerHTML='';
   for(let i=1;i<=60;i++){
     const done = lp[i]?.done;
-    const locked = i>1 && !lp[i-1]?.done;
+    const locked = false;
     const active = i===currentLevel;
     const el=document.createElement('div');
     el.className=`level-item ${active?'active':''} ${done?'done':''} ${locked?'locked':''}`;
